@@ -307,10 +307,13 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
     <div className="relative ml-2">
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className={`multi-touch touch-feedback ${isMobile ? 'w-full' : ''} bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-4 text-sm' : 'py-3 px-6 text-sm'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 ${!isMobile ? 'ml-2' : ''}`}
         className={`multi-touch touch-feedback ${isMobile ? 'w-full' : ''} bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-4 text-sm' : 'py-3 px-6 text-sm'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 ${!isMobile ? 'ml-2' : ''} disabled:opacity-50 disabled:cursor-not-allowed`}
+        style={{ 
           touchAction: 'manipulation',
           WebkitTapHighlightColor: 'transparent',
+          cursor: 'pointer',
+          minHeight: '48px'
+        }}
       >
         <div className="flex items-center space-x-2">
           <span>🦋</span>
