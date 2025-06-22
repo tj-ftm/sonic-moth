@@ -252,12 +252,24 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
 
   const drawProjectile = (ctx: CanvasRenderingContext2D, projectile: Projectile) => {
     ctx.save();
-    ctx.shadowBlur = 15;
+    
+    // Enhanced glow effect
+    ctx.shadowBlur = 25;
     ctx.shadowColor = '#FFD700';
+    
+    // Outer glow
+    ctx.beginPath();
+    ctx.arc(projectile.x + projectile.width / 2, projectile.y + projectile.height / 2, projectile.width / 2 + 3, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+    ctx.fill();
+    
+    // Main projectile with stronger glow
     ctx.fillStyle = '#FFD700';
+    ctx.shadowBlur = 30;
     ctx.beginPath();
     ctx.arc(projectile.x + projectile.width / 2, projectile.y + projectile.height / 2, projectile.width / 2, 0, Math.PI * 2);
     ctx.fill();
+    
     ctx.restore();
   };
 
@@ -377,8 +389,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       state.projectiles.push({
         x: state.moth.x + state.moth.width,
         y: state.moth.y + state.moth.height / 2 - 3,
-        width: 6,
-        height: 6,
+        width: 10, // Increased from 6
+        height: 10, // Increased from 6
         speedX: 8
       });
       state.lastProjectileTime = currentTime;
@@ -399,8 +411,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
         state.obstacles.push({
           x: canvas.width + i * 120,
           y: Math.random() * (canvas.height - 100) + 50,
-          width: 60,
-          height: 60,
+          width: 42, // 70% of 60
+          height: 42, // 70% of 60
           speedX: -4,
           type: 'wind'
         });
@@ -494,6 +506,9 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
   }, []);
 
   useEffect(() => {
+    let isDragging = false;
+    let lastTouchY = 0;
+    
     const handleKeyDown = (e: KeyboardEvent) => {
       const state = gameStateRef.current;
       switch (e.key.toLowerCase()) {
@@ -531,9 +546,12 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     };
 
     const handleTouchStart = (e: TouchEvent) => {
+      if (!isMobile || gameState !== 'playing') return;
+      
       const canvas = canvasRef.current;
       if (!canvas) return;
       
+      e.preventDefault();
       const rect = canvas.getBoundingClientRect();
       const touch = e.touches[0];
       const x = touch.clientX - rect.left;
@@ -545,17 +563,51 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       if (x > canvas.width / 2) {
         state.keys.space = true;
       } else {
-        // Left side for movement
-        if (y < canvas.height / 2) {
-          state.keys.up = true;
-        } else {
-          state.keys.down = true;
-        }
+        // Left side for drag movement
+        isDragging = true;
+        lastTouchY = y;
       }
     };
 
-    const handleTouchEnd = () => {
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isMobile || gameState !== 'playing' || !isDragging) return;
+      
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+      
+      // Only handle movement on left side
+      if (x <= canvas.width / 2) {
+        const deltaY = y - lastTouchY;
+        const state = gameStateRef.current;
+        
+        // Move moth based on drag direction
+        if (deltaY < -5) { // Dragging up
+          state.keys.up = true;
+          state.keys.down = false;
+        } else if (deltaY > 5) { // Dragging down
+          state.keys.down = true;
+          state.keys.up = false;
+        } else {
+          state.keys.up = false;
+          state.keys.down = false;
+        }
+        
+        lastTouchY = y;
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!isMobile) return;
+      
+      e.preventDefault();
       const state = gameStateRef.current;
+      isDragging = false;
       state.keys.up = false;
       state.keys.down = false;
       state.keys.space = false;
@@ -564,15 +616,17 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchmove', handleTouchMove);
     window.addEventListener('touchend', handleTouchEnd);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, []);
+  }, [isMobile, gameState]);
 
   const startGame = () => {
     resetGame();
@@ -595,44 +649,18 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
           transition={{ duration: 0.2 }}
         />
         
-        {/* Mobile Touch Controls */}
+        {/* Mobile Touch Control Indicators */}
         {isMobile && gameState === 'playing' && (
           <div className="absolute inset-0 pointer-events-none">
-            {/* Up Arrow */}
-            <motion.button
-              onTouchStart={(e) => {
-                e.preventDefault();
-                handleMobileUp();
-              }}
-              className="absolute top-4 right-4 bg-orange-600/80 hover:bg-orange-700/80 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg border border-orange-400/50 pointer-events-auto"
-              whileTap={{ scale: 0.9 }}
-            >
-              <span className="text-xl">↑</span>
-            </motion.button>
+            {/* Left side drag indicator */}
+            <div className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-orange-600/60 text-white rounded-lg px-2 py-1 text-xs">
+              Drag to Move
+            </div>
             
-            {/* Down Arrow */}
-            <motion.button
-              onTouchStart={(e) => {
-                e.preventDefault();
-                handleMobileDown();
-              }}
-              className="absolute top-20 right-4 bg-orange-600/80 hover:bg-orange-700/80 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg border border-orange-400/50 pointer-events-auto"
-              whileTap={{ scale: 0.9 }}
-            >
-              <span className="text-xl">↓</span>
-            </motion.button>
-            
-            {/* Shoot Button */}
-            <motion.button
-              onTouchStart={(e) => {
-                e.preventDefault();
-                handleMobileShoot();
-              }}
-              className="absolute bottom-4 right-4 bg-yellow-600/80 hover:bg-yellow-700/80 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg border border-yellow-400/50 pointer-events-auto"
-              whileTap={{ scale: 0.9 }}
-            >
-              <span className="text-xl">💫</span>
-            </motion.button>
+            {/* Right side tap indicator */}
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-yellow-600/60 text-white rounded-lg px-2 py-1 text-xs">
+              Tap to Shoot
+            </div>
           </div>
         )}
         
@@ -669,8 +697,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
                   <p className="text-orange-200 font-medium mb-2">Controls:</p>
                   {isMobile ? (
                     <div className="space-y-1 text-orange-300">
-                      <p>• Use arrow buttons to move up/down</p>
-                      <p>• Use 💫 button to shoot light</p>
+                      <p>• Drag left side: Move up/down</p>
+                      <p>• Tap right side: Shoot light</p>
                     </div>
                   ) : (
                     <div className="space-y-1 text-orange-300">
