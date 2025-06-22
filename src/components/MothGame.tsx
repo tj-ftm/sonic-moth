@@ -452,7 +452,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     drawUI(ctx, canvas.width, canvas.height);
     
     gameLoopRef.current = requestAnimationFrame(gameLoop);
-  }, [gameState, lives, level, onScoreUpdate, hitTint]);
+  }, [gameState, lives, onScoreUpdate, hitTint]);
 
   useEffect(() => {
     gameLoopRef.current = requestAnimationFrame(gameLoop);
