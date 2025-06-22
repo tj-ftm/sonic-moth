@@ -328,8 +328,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const state = gameStateRef.current;
-
     // Draw sun glow on the right side
     drawSunGlow(ctx, currentTime, state.lampSize);
     
