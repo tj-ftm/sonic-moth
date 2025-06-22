@@ -20,28 +20,11 @@ const Navigation: React.FC<NavigationProps> = ({
   userPoints, 
   onWalletConnect 
 }) => {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
   const tabs = [
     { id: 'home', label: 'Home', icon: '🦋' },
     { id: 'leaderboard', label: 'Leaderboard', icon: '🏆' },
     { id: 'about', label: 'About', icon: 'ℹ️' }
   ];
-
-  // Don't render navigation on mobile home page
-  if (isMobile && activeTab === 'home') {
-    return null;
-  }
 
   return (
     <nav className="relative z-20 p-6">

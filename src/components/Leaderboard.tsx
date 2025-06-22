@@ -87,9 +87,9 @@ const Leaderboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-full">
+    <div className="max-w-4xl mx-auto">
       <motion.h2 
-        className="text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-8 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"
+        className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"
         animate={{ 
           filter: ['drop-shadow(0 0 10px rgba(168, 85, 247, 0.5))', 'drop-shadow(0 0 20px rgba(168, 85, 247, 0.8))', 'drop-shadow(0 0 10px rgba(168, 85, 247, 0.5))']
         }}
@@ -100,7 +100,7 @@ const Leaderboard: React.FC = () => {
 
       <div className="bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-2xl border border-purple-500/30 overflow-hidden">
         <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-4 border-b border-purple-500/30">
-          <div className="grid grid-cols-4 gap-2 lg:gap-4 text-white font-semibold text-sm lg:text-base">
+          <div className="grid grid-cols-4 gap-4 text-white font-semibold">
             <div className="text-center">Rank</div>
             <div className="text-center">Player</div>
             <div className="text-center">Points</div>
@@ -120,7 +120,7 @@ const Leaderboard: React.FC = () => {
                   player.rank <= 3 ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10' : ''
                 }`}
               >
-                <div className="text-center text-sm lg:text-base">
+                <div className="text-center">
                   <span className={`text-xl font-bold ${
                     player.rank === 1 ? 'text-yellow-400' :
                     player.rank === 2 ? 'text-gray-300' :
@@ -131,13 +131,13 @@ const Leaderboard: React.FC = () => {
                   </span>
                 </div>
                 
-                <div className="text-center text-xs lg:text-sm">
-                  <span className="text-purple-200 px-1 lg:px-2 py-1 rounded">
+                <div className="text-center">
+                  <span className="text-purple-200 px-2 py-1 rounded text-sm">
                     {player.address}
                   </span>
                 </div>
                 
-                <div className="text-center text-sm lg:text-base">
+                <div className="text-center">
                   <motion.span 
                     className="text-white font-bold text-lg"
                     animate={{ 
@@ -153,9 +153,10 @@ const Leaderboard: React.FC = () => {
                   </motion.span>
                 </div>
                 
-                <div className="text-center text-lg lg:text-2xl">
+                <div className="text-center">
                   {player.badge && (
                     <motion.span 
+                      className="text-2xl"
                       animate={{ 
                         scale: [1, 1.1, 1],
                         rotate: [0, 5, -5, 0]
@@ -176,8 +177,8 @@ const Leaderboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="mt-4 lg:mt-8 text-center">
-        <p className="text-purple-300 text-xs lg:text-sm">
+      <div className="mt-8 text-center">
+        <p className="text-purple-300 text-sm">
           Leaderboard updates every 30 seconds. Play the moth survival game to climb the ranks! 🦋
         </p>
       </div>
