@@ -108,22 +108,6 @@ const Navigation: React.FC<NavigationProps> = ({
                 </motion.button>
                 
                 {/* About Button */}
-                {onShowAbout && (
-                  <motion.button
-                    onClick={() => {
-                      onShowAbout();
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 flex items-center space-x-2"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <span>ℹ️</span>
-                    <span>About</span>
-                  </motion.button>
-                )}
-                
-                {/* Leaderboard Button */}
                 {onShowLeaderboard && (
                   <motion.button
                     onClick={() => {
@@ -136,6 +120,22 @@ const Navigation: React.FC<NavigationProps> = ({
                   >
                     <span>🏆</span>
                     <span>Leaderboard</span>
+                  </motion.button>
+                )}
+                
+                {/* About Button */}
+                {onShowAbout && (
+                  <motion.button
+                    onClick={() => {
+                      onShowAbout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 flex items-center space-x-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span>ℹ️</span>
+                    <span>About</span>
                   </motion.button>
                 )}
                 
@@ -193,19 +193,6 @@ const Navigation: React.FC<NavigationProps> = ({
               ))}
               
               {/* About Button */}
-              {activeTab === 'home' && onShowAbout && (
-                <motion.button
-                  onClick={onShowAbout}
-                  className="px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 text-orange-200 hover:text-white hover:bg-orange-800/30"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="mr-2">ℹ️</span>
-                  About
-                </motion.button>
-              )}
-              
-              {/* Leaderboard Button */}
               {activeTab === 'home' && onShowLeaderboard && (
                 <motion.button
                   onClick={onShowLeaderboard}
@@ -215,6 +202,19 @@ const Navigation: React.FC<NavigationProps> = ({
                 >
                   <span className="mr-2">🏆</span>
                   Leaderboard
+                </motion.button>
+              )}
+              
+              {/* About Button */}
+              {activeTab === 'home' && onShowAbout && (
+                <motion.button
+                  onClick={onShowAbout}
+                  className="px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 text-orange-200 hover:text-white hover:bg-orange-800/30"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className="mr-2">ℹ️</span>
+                  About
                 </motion.button>
               )}
               

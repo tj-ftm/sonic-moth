@@ -7,7 +7,6 @@ interface WalletConnectProps {
 
 const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
   const [isConnecting, setIsConnecting] = useState(false);
-  const [showWalletOptions, setShowWalletOptions] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const SONIC_NETWORK = {
@@ -54,7 +53,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
     }
   };
 
-  const connectMetaMask = async () => {
+  const connectRabby = async () => {
     try {
       if (typeof window.ethereum !== 'undefined') {
         setIsConnecting(true);
@@ -68,35 +67,9 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
         if (accounts.length > 0) {
           await checkAndSwitchNetwork(window.ethereum);
           onConnect(true);
-          setShowWalletOptions(false);
         }
       } else {
-        setError('MetaMask is not installed');
-      }
-    } catch (error: any) {
-      setError(error.message || 'Failed to connect to MetaMask');
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const connectRabby = async () => {
-    try {
-      if (typeof window.ethereum !== 'undefined' && window.ethereum.isRabby) {
-        setIsConnecting(true);
-        setError(null);
-        
-        const accounts = await window.ethereum.request({
-          method: 'eth_requestAccounts',
-        });
-        
-        if (accounts.length > 0) {
-          await checkAndSwitchNetwork(window.ethereum);
-          onConnect(true);
-          setShowWalletOptions(false);
-        }
-      } else {
-        setError('Rabby Wallet is not installed');
+        setError('Rabby Wallet is not installed. Please install Rabby Wallet to continue.');
       }
     } catch (error: any) {
       setError(error.message || 'Failed to connect to Rabby Wallet');
@@ -106,83 +79,33 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
   };
 
   const handleConnect = () => {
-    setShowWalletOptions(true);
-    setError(null);
+    connectRabby();
   };
-
-  if (showWalletOptions) {
-    return (
-      <motion.div 
-        className="text-center"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3 }}
-      >
-        <h3 className="text-2xl font-bold text-white mb-6">Choose Your Wallet</h3>
-        
-        {error && (
-          <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-4">
-            <p className="text-red-200 text-sm">{error}</p>
-          </div>
-        )}
-        
-        <div className="space-y-4 max-w-md mx-auto">
-          <motion.button
-            onClick={connectMetaMask}
-            disabled={isConnecting}
-            className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-orange-500/25 border border-orange-400/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <span className="text-2xl">🦊</span>
-            <span>MetaMask</span>
-            {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>}
-          </motion.button>
-
-          <motion.button
-            onClick={connectRabby}
-            disabled={isConnecting}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-purple-500/25 border border-purple-400/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <span className="text-2xl">🐰</span>
-            <span>Rabby Wallet</span>
-            {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>}
-          </motion.button>
-        </div>
-
-        <motion.button
-          onClick={() => setShowWalletOptions(false)}
-          className="mt-6 text-orange-300 hover:text-orange-200 underline"
-          whileHover={{ scale: 1.05 }}
-        >
-          Back
-        </motion.button>
-        
-        <p className="text-orange-300 mt-4 text-sm">
-          Connect your wallet to access the Sonic Network
-        </p>
-      </motion.div>
-    );
-  }
 
   return (
     <motion.div className="text-center">
       <motion.button
         onClick={handleConnect}
-        className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-4 px-8 rounded-full text-lg shadow-lg shadow-orange-500/25 border border-orange-400/30"
+        disabled={isConnecting}
+        className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-4 px-8 rounded-full text-lg shadow-lg shadow-orange-500/25 border border-orange-400/30 disabled:opacity-50 disabled:cursor-not-allowed"
         whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
         whileTap={{ scale: 0.95 }}
       >
         <div className="flex items-center space-x-2">
-          <span>🦋</span>
-          <span>Connect Wallet</span>
+          <span>🐰</span>
+          <span>{isConnecting ? 'Connecting...' : 'Connect Rabby Wallet'}</span>
+          {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>}
         </div>
       </motion.button>
       
+      {error && (
+        <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mt-4 max-w-md mx-auto">
+          <p className="text-red-200 text-sm">{error}</p>
+        </div>
+      )}
+      
       <p className="text-orange-300 mt-4 text-sm">
-        Connect your wallet to access the Sonic Network
+        Connect your Rabby wallet to access the Sonic Network
       </p>
     </motion.div>
   );

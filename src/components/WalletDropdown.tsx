@@ -16,7 +16,6 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [showWalletOptions, setShowWalletOptions] = useState(false);
   const [userName, setUserName] = useState(localStorage.getItem('mothUserName') || '');
   const [isEditingName, setIsEditingName] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string>('');
@@ -35,6 +34,8 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
     blockExplorerUrls: ['https://sonicscan.org'],
   };
 
+  // Mock balance update function - replace with actual Web3 integration
+  const [mockBalances, setMockBalances] = useState({ sonic: '0.00', moth: '0.00' });
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -47,15 +48,36 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
 
   useEffect(() => {
     if (walletConnected && typeof window.ethereum !== 'undefined') {
-      // Get current account
+      // Get current account and update balances
       window.ethereum.request({ method: 'eth_accounts' })
         .then((accounts: string[]) => {
           if (accounts.length > 0) {
             setWalletAddress(accounts[0]);
+            // Simulate balance updates - replace with actual Web3 calls
+            updateBalances();
           }
         });
     }
   }, [walletConnected]);
+
+  const updateBalances = async () => {
+    try {
+      // Simulate fetching real balances - replace with actual Web3 integration
+      setTimeout(() => {
+        const newBalances = {
+          sonic: (Math.random() * 10).toFixed(2),
+          moth: (Math.random() * 1000).toFixed(0)
+        };
+        setMockBalances(newBalances);
+        // Update parent component balances
+        if (typeof onWalletConnect === 'function') {
+          // This would need to be passed as a callback to update parent state
+          }
+      }, 1000);
+    } catch (error) {
+      console.error('Error updating balances:', error);
+    }
+  };
 
   const checkAndSwitchNetwork = async (provider: any) => {
     try {
@@ -88,7 +110,7 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
     }
   };
 
-  const connectMetaMask = async () => {
+  const connectRabby = async () => {
     try {
       if (typeof window.ethereum !== 'undefined') {
         setIsConnecting(true);
@@ -101,37 +123,11 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
         if (accounts.length > 0) {
           await checkAndSwitchNetwork(window.ethereum);
           setWalletAddress(accounts[0]);
+          updateBalances();
           onWalletConnect(true);
-          setShowWalletOptions(false);
         }
       } else {
-        setError('MetaMask is not installed');
-      }
-    } catch (error: any) {
-      setError(error.message || 'Failed to connect to MetaMask');
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const connectRabby = async () => {
-    try {
-      if (typeof window.ethereum !== 'undefined' && window.ethereum.isRabby) {
-        setIsConnecting(true);
-        setError(null);
-        
-        const accounts = await window.ethereum.request({
-          method: 'eth_requestAccounts',
-        });
-        
-        if (accounts.length > 0) {
-          await checkAndSwitchNetwork(window.ethereum);
-          setWalletAddress(accounts[0]);
-          onWalletConnect(true);
-          setShowWalletOptions(false);
-        }
-      } else {
-        setError('Rabby Wallet is not installed');
+        setError('Rabby Wallet is not installed. Please install Rabby Wallet to continue.');
       }
     } catch (error: any) {
       setError(error.message || 'Failed to connect to Rabby Wallet');
@@ -141,8 +137,7 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
   };
 
   const handleConnect = () => {
-    setShowWalletOptions(true);
-    setError(null);
+    connectRabby();
   };
 
   const handleDisconnect = () => {
@@ -162,72 +157,26 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
   };
 
   if (!walletConnected) {
-    if (showWalletOptions) {
-      return (
-        <div className="relative ml-2">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className={`absolute right-0 top-0 ${isMobile ? 'w-72' : 'w-80'} bg-black/90 backdrop-blur-md rounded-xl border border-orange-500/30 shadow-2xl shadow-orange-500/20 z-50 p-6`}
-          >
-            <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold text-white mb-4 text-center`}>Choose Your Wallet</h3>
-            
-            {error && (
-              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-4">
-                <p className="text-red-200 text-sm">{error}</p>
-              </div>
-            )}
-            
-            <div className="space-y-3">
-              <motion.button
-                onClick={connectMetaMask}
-                disabled={isConnecting}
-                className={`w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-2 px-3 text-sm' : 'py-3 px-4'} rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <span>🦊</span>
-                <span>MetaMask</span>
-                {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
-              </motion.button>
-
-              <motion.button
-                onClick={connectRabby}
-                disabled={isConnecting}
-                className={`w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold ${isMobile ? 'py-2 px-3 text-sm' : 'py-3 px-4'} rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <span>🐰</span>
-                <span>Rabby</span>
-                {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
-              </motion.button>
-            </div>
-
-            <motion.button
-              onClick={() => setShowWalletOptions(false)}
-              className="w-full mt-4 text-orange-300 hover:text-orange-200 underline text-sm"
-              whileHover={{ scale: 1.05 }}
-            >
-              Cancel
-            </motion.button>
-          </motion.div>
-        </div>
-      );
-    }
-
     return (
       <motion.button
         onClick={handleConnect}
-        className={`${isMobile ? 'w-full' : ''} bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-4 text-sm' : 'py-3 px-6 text-sm'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 ${!isMobile ? 'ml-2' : ''}`}
+        disabled={isConnecting}
+        className={`${isMobile ? 'w-full' : ''} bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-4 text-sm' : 'py-3 px-6 text-sm'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 ${!isMobile ? 'ml-2' : ''} disabled:opacity-50 disabled:cursor-not-allowed`}
         whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
         whileTap={{ scale: 0.95 }}
       >
         <div className="flex items-center space-x-2">
-          <span>🦋</span>
-          <span>Connect</span>
+          <span>🐰</span>
+          <span>{isConnecting ? 'Connecting...' : 'Connect Rabby'}</span>
+          {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>}
         </div>
       </motion.button>
+      
+      {error && (
+        <div className="absolute top-full mt-2 right-0 bg-red-500/20 border border-red-500/50 rounded-lg p-3 z-50">
+          <p className="text-red-200 text-sm max-w-xs">{error}</p>
+        </div>
+      )}
     );
   }
 
@@ -263,14 +212,14 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
               <div className="bg-orange-800/20 rounded-lg p-3 border border-orange-400/20">
                 <div className="flex justify-between items-center">
                   <span className={`text-orange-200 ${isMobile ? 'text-xs' : 'text-sm'}`}>Sonic ($S)</span>
-                  <span className={`text-white font-semibold ${isMobile ? 'text-sm' : ''}`}>{balances.sonic}</span>
+                  <span className={`text-white font-semibold ${isMobile ? 'text-sm' : ''}`}>{mockBalances.sonic}</span>
                 </div>
               </div>
               
               <div className="bg-red-800/20 rounded-lg p-3 border border-red-400/20">
                 <div className="flex justify-between items-center">
                   <span className={`text-orange-200 ${isMobile ? 'text-xs' : 'text-sm'}`}>MOTH Token</span>
-                  <span className={`text-white font-semibold ${isMobile ? 'text-sm' : ''}`}>{balances.moth}</span>
+                  <span className={`text-white font-semibold ${isMobile ? 'text-sm' : ''}`}>{mockBalances.moth}</span>
                 </div>
               </div>
               

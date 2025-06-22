@@ -732,7 +732,20 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
         
         {gameState === 'gameOver' && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm rounded-lg">
-            <div className={`bg-gradient-to-br from-black via-gray-900 to-orange-900 rounded-2xl border border-orange-500/30 p-6 ${isMobile ? 'w-full max-w-sm mx-4' : 'max-w-2xl w-full'} max-h-[80vh] overflow-y-auto scrollbar-hide`}>
+            <div className={`bg-gradient-to-br from-black via-gray-900 to-orange-900 rounded-2xl border border-orange-500/30 p-6 ${isMobile ? 'w-full max-w-sm mx-4 mt-16' : 'max-w-2xl w-full'} max-h-[80vh] overflow-y-auto scrollbar-hide relative`}>
+              {/* Close Button */}
+              <motion.button
+                onClick={() => {
+                  setGameState('menu');
+                  resetGame();
+                }}
+                className="absolute top-4 right-4 text-orange-300 hover:text-orange-200 text-xl z-10"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                ✕
+              </motion.button>
+              
               <div className="text-center mb-6">
                 <h3 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-white mb-4`}>Game Over!</h3>
                 <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-orange-200 mb-6`}>Final Score: {finalScore.toLocaleString()}</p>
