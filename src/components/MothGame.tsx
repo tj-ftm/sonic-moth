@@ -66,24 +66,24 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
-    // Real-time score update effect
-    useEffect(() => {
-      const interval = setInterval(() => {
-        if (gameState === 'playing') {
-          const state = gameStateRef.current;
-          setCurrentScore(state.continuousScore);
-          onScoreUpdate(state.continuousScore);
-        }
-      }, 50); // Update every 50ms for smooth real-time updates
-      
-      return () => clearInterval(interval);
-    }, [gameState, onScoreUpdate]);
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Real-time score update effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (gameState === 'playing') {
+        const state = gameStateRef.current;
+        setCurrentScore(state.continuousScore);
+        onScoreUpdate(state.continuousScore);
+      }
+    }, 50); // Update every 50ms for smooth real-time updates
+    
+    return () => clearInterval(interval);
+  }, [gameState, onScoreUpdate]);
 
   // Mobile touch control handlers
   const handleMobileUp = () => {
