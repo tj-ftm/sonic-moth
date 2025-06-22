@@ -61,7 +61,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
 
   const drawGlowingRect = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string, glowColor: string) => {
     ctx.save();
-    ctx.shadowBlur = 20;
+    ctx.shadowBlur = 15; // Reduced glow for performance
     ctx.shadowColor = glowColor;
     ctx.fillStyle = color;
     ctx.fillRect(x, y, width, height);
@@ -71,20 +71,18 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
   const drawMoth = (ctx: CanvasRenderingContext2D, moth: GameObject, time: number, isHit: boolean) => {
     ctx.save();
     
-    const flapOffset = Math.sin(time * 0.01) * 3;
+    const flapOffset = Math.sin(time * 0.008) * 2; // Reduced animation frequency
     const color = isHit ? '#FF0000' : '#F97316';
     const glowColor = isHit ? '#FF0000' : '#FB923C';
-    const glowIntensity = isHit ? 40 : 15;
+    const glowIntensity = isHit ? 30 : 10; // Reduced glow for performance
     
-    // Enhanced glow when hit
     ctx.shadowBlur = glowIntensity;
     ctx.shadowColor = glowColor;
     ctx.fillStyle = color;
     ctx.fillRect(moth.x + 10, moth.y + 8, 10, 4);
     
-    // Wings with flapping animation
+    // Wings with simplified animation
     ctx.fillStyle = isHit ? '#FF4444' : '#FB7185';
-    ctx.shadowColor = glowColor;
     
     // Left wing
     ctx.beginPath();
@@ -102,17 +100,16 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
   const drawLamp = (ctx: CanvasRenderingContext2D, lamp: GameObject, time: number) => {
     ctx.save();
     
-    const glowIntensity = 30 + Math.sin(time * 0.005) * 10;
+    const glowIntensity = 20 + Math.sin(time * 0.003) * 5; // Reduced animation
     
-    // Create smooth gradient without banding
-    const gradient = ctx.createRadialGradient(lamp.x + 20, lamp.y + 20, 0, lamp.x + 20, lamp.y + 20, 60);
+    // Simplified gradient without banding
+    const gradient = ctx.createRadialGradient(lamp.x + 20, lamp.y + 20, 0, lamp.x + 20, lamp.y + 20, 50);
     gradient.addColorStop(0, '#FED7AA');
-    gradient.addColorStop(0.3, '#FB923C');
-    gradient.addColorStop(0.6, '#EA580C');
-    gradient.addColorStop(1, 'transparent');
+    gradient.addColorStop(0.5, '#FB923C');
+    gradient.addColorStop(1, 'rgba(234, 88, 12, 0)');
     
     ctx.fillStyle = gradient;
-    ctx.fillRect(lamp.x - 40, lamp.y - 40, 120, 120);
+    ctx.fillRect(lamp.x - 30, lamp.y - 30, 100, 100);
     
     // Lamp base
     ctx.shadowBlur = glowIntensity;
@@ -121,7 +118,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     ctx.fillRect(lamp.x, lamp.y + 40, lamp.width, 20);
     
     // Lamp bulb
-    ctx.shadowColor = '#F97316';
     ctx.fillStyle = '#FB923C';
     ctx.beginPath();
     ctx.ellipse(lamp.x + 20, lamp.y + 20, 18, 25, 0, 0, Math.PI * 2);
@@ -134,39 +130,39 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     ctx.save();
     
     if (obstacle.type === 'web') {
-      const shimmer = Math.sin(time * 0.008) * 0.3 + 0.7;
+      const shimmer = Math.sin(time * 0.005) * 0.2 + 0.8; // Reduced animation
       ctx.strokeStyle = `rgba(156, 163, 175, ${shimmer})`;
-      ctx.lineWidth = 3;
-      ctx.shadowBlur = 15;
+      ctx.lineWidth = 2;
+      ctx.shadowBlur = 10;
       ctx.shadowColor = '#9CA3AF';
       
-      // Enhanced web pattern
-      for (let i = 0; i < 6; i++) {
+      // Simplified web pattern
+      for (let i = 0; i < 5; i++) {
         ctx.beginPath();
-        ctx.moveTo(obstacle.x, obstacle.y + i * 8);
-        ctx.lineTo(obstacle.x + obstacle.width, obstacle.y + i * 8);
+        ctx.moveTo(obstacle.x, obstacle.y + i * 10);
+        ctx.lineTo(obstacle.x + obstacle.width, obstacle.y + i * 10);
         ctx.stroke();
       }
       
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 3; i++) {
         ctx.beginPath();
-        ctx.moveTo(obstacle.x + i * 12, obstacle.y);
-        ctx.lineTo(obstacle.x + i * 12, obstacle.y + obstacle.height);
+        ctx.moveTo(obstacle.x + i * 15, obstacle.y);
+        ctx.lineTo(obstacle.x + i * 15, obstacle.y + obstacle.height);
         ctx.stroke();
       }
     } else {
-      ctx.fillStyle = 'rgba(59, 130, 246, 0.8)';
-      ctx.shadowBlur = 20;
+      ctx.fillStyle = 'rgba(59, 130, 246, 0.6)';
+      ctx.shadowBlur = 15;
       ctx.shadowColor = '#3B82F6';
       
-      // Enhanced wind pattern
-      for (let i = 0; i < 15; i++) {
-        const swirl = Math.sin(time * 0.01 + i) * 8;
+      // Simplified wind pattern
+      for (let i = 0; i < 8; i++) {
+        const swirl = Math.sin(time * 0.008 + i) * 6;
         ctx.beginPath();
         ctx.arc(
-          obstacle.x + 8 + (i * 4) + swirl,
-          obstacle.y + 15 + Math.sin(time * 0.005 + i) * 12,
-          4, 0, Math.PI * 2
+          obstacle.x + 10 + (i * 6) + swirl,
+          obstacle.y + 20 + Math.sin(time * 0.004 + i) * 8,
+          3, 0, Math.PI * 2
         );
         ctx.fill();
       }
@@ -184,12 +180,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
 
     const state = gameStateRef.current;
     
-    // Clear canvas with smooth gradient background
-    const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    bgGradient.addColorStop(0, '#000000');
-    bgGradient.addColorStop(0.5, '#1C1917');
-    bgGradient.addColorStop(1, '#7C2D12');
-    ctx.fillStyle = bgGradient;
+    // Clear canvas with solid background (no gradient for performance)
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Update moth position
@@ -199,25 +191,25 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     if (state.keys.left && state.moth.x > 0) state.moth.x -= speed;
     if (state.keys.right && state.moth.x < canvas.width - state.moth.width) state.moth.x += speed;
     
-    // Continuous scoring
-    if (currentTime - state.lastScoreTime > 100) {
+    // Continuous scoring with reduced frequency for performance
+    if (currentTime - state.lastScoreTime > 200) { // Increased interval
       state.continuousScore += 1;
       setScore(state.continuousScore);
       state.lastScoreTime = currentTime;
     }
     
-    // Spawn more obstacles with higher frequency
-    if (currentTime - state.lastObstacleSpawn > Math.max(800 - (level * 50), 300)) {
-      const obstacleType = Math.random() < 0.5 ? 'web' : 'wind';
-      const numObstacles = Math.random() < 0.3 ? 2 : 1; // 30% chance for double obstacles
+    // Spawn obstacles with reduced frequency
+    if (currentTime - state.lastObstacleSpawn > Math.max(1200 - (level * 100), 600)) {
+      const obstacleType = Math.random() < 0.6 ? 'web' : 'wind';
+      const numObstacles = Math.random() < 0.2 ? 2 : 1; // Reduced double obstacle chance
       
       for (let i = 0; i < numObstacles; i++) {
         state.obstacles.push({
-          x: canvas.width + i * 100,
+          x: canvas.width + i * 120,
           y: Math.random() * (canvas.height - 150) + 50,
-          width: obstacleType === 'web' ? 60 : 70,
-          height: obstacleType === 'web' ? 50 : 40,
-          speedX: -4 - (level * 0.8),
+          width: obstacleType === 'web' ? 50 : 60,
+          height: obstacleType === 'web' ? 40 : 35,
+          speedX: -3 - (level * 0.5), // Slightly reduced speed
           type: obstacleType
         });
       }
@@ -270,7 +262,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       state.obstacles = [];
     }
     
-    // Draw everything
+    // Draw everything with optimized rendering
     drawMoth(ctx, state.moth, currentTime, isHit);
     drawLamp(ctx, state.lamp, currentTime);
     
@@ -278,13 +270,13 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       drawObstacle(ctx, obstacle, currentTime);
     });
     
-    // Draw UI with orange theme
+    // Draw UI with reduced glow
     ctx.fillStyle = '#FB923C';
-    ctx.font = '20px Arial';
-    ctx.shadowBlur = 10;
+    ctx.font = '18px Arial';
+    ctx.shadowBlur = 5;
     ctx.shadowColor = '#FB923C';
     ctx.fillText(`Score: ${state.continuousScore}`, 20, 30);
-    ctx.fillText(`Level: ${level}`, 20, 60);
+    ctx.fillText(`Level: ${level}`, 20, 55);
     
     gameLoopRef.current = requestAnimationFrame(gameLoop);
   }, [gameState, lives, level, onScoreUpdate]);
@@ -365,9 +357,9 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       <motion.h2 
         className="text-4xl font-bold text-center bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent"
         animate={{ 
-          filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 20px rgba(249, 115, 22, 0.8))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
+          filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.7))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
         }}
-        transition={{ duration: 2, repeat: Infinity }}
+        transition={{ duration: 3, repeat: Infinity }} // Slower animation
       >
         Moth to the Lamp
       </motion.h2>
@@ -422,9 +414,9 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
             key={index}
             className={`text-3xl ${index < lives ? 'text-red-400' : 'text-gray-600'}`}
             animate={index < lives ? { 
-              filter: ['drop-shadow(0 0 8px rgba(248, 113, 113, 0.8))', 'drop-shadow(0 0 16px rgba(248, 113, 113, 1))', 'drop-shadow(0 0 8px rgba(248, 113, 113, 0.8))']
+              filter: ['drop-shadow(0 0 8px rgba(248, 113, 113, 0.8))', 'drop-shadow(0 0 12px rgba(248, 113, 113, 1))', 'drop-shadow(0 0 8px rgba(248, 113, 113, 0.8))']
             } : {}}
-            transition={{ duration: 1, repeat: Infinity }}
+            transition={{ duration: 2, repeat: Infinity }} // Slower animation
           >
             ❤️
           </motion.div>
