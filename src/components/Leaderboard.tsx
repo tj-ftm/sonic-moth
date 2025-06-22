@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-const Leaderboard: React.FC = () => {
+interface LeaderboardProps {
+  walletAddress?: string;
+  walletConnected?: boolean;
+}
+
+const Leaderboard: React.FC<LeaderboardProps> = ({ walletAddress, walletConnected }) => {
   const [leaderboardData, setLeaderboardData] = useState<Array<{
     rank: number;
     address: string;
     points: number;
     badge: string;
+    isCurrentUser?: boolean;
   }>>([]);
 
   useEffect(() => {
@@ -18,34 +24,83 @@ const Leaderboard: React.FC = () => {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && key.startsWith('mothScore_')) {
-          const address = key.replace('mothScore_', '');
+          const identifier = key.replace('mothScore_', '');
           const score = parseInt(localStorage.getItem(key) || '0');
-          const userName = localStorage.getItem(`mothUserName_${address}`) || address;
+          
+          // Check if this is a wallet address or timestamp
+          let displayName = identifier;
+          let isWalletAddress = false;
+          
+          if (identifier.startsWith('0x') && identifier.length === 42) {
+            // This is a wallet address
+            isWalletAddress = true;
+            const walletDisplayName = localStorage.getItem(`mothWalletName_${identifier}`);
+            displayName = walletDisplayName || `${identifier.slice(0, 6)}...${identifier.slice(-4)}`;
+          } else {
+            // This is a timestamp-based entry, check for display name
+            const userName = localStorage.getItem(`mothUserName_${identifier}`);
+            displayName = userName || 'Anonymous';
+          }
           
           scores.push({
-            address: userName,
-            points: score
+            address: displayName,
+            points: score,
+            identifier: identifier,
+            isWalletAddress: isWalletAddress
           });
         }
       }
       
-      // Add current user's score if available
+      // Add current user's score if available and not already in the list
       const currentScore = parseInt(localStorage.getItem('currentMothScore') || '0');
-      const currentUser = localStorage.getItem('mothUserName') || 'Anonymous';
-      
       if (currentScore > 0) {
-        scores.push({
-          address: currentUser,
-          points: currentScore
-        });
+        let currentUserDisplayName = 'Anonymous';
+        let currentUserIdentifier = 'current';
+        let isCurrentWallet = false;
+        
+        if (walletConnected && walletAddress) {
+          // User is connected with wallet
+          currentUserIdentifier = walletAddress;
+          isCurrentWallet = true;
+          const walletDisplayName = localStorage.getItem(`mothWalletName_${walletAddress}`);
+          currentUserDisplayName = walletDisplayName || `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+          
+          // Check if this wallet already has a score recorded
+          const existingWalletScore = scores.find(s => s.identifier === walletAddress);
+          if (!existingWalletScore || existingWalletScore.points < currentScore) {
+            // Remove existing lower score for this wallet
+            if (existingWalletScore) {
+              const index = scores.indexOf(existingWalletScore);
+              scores.splice(index, 1);
+            }
+            
+            scores.push({
+              address: currentUserDisplayName,
+              points: currentScore,
+              identifier: currentUserIdentifier,
+              isWalletAddress: isCurrentWallet
+            });
+          }
+        } else {
+          // User is not connected, use display name
+          const currentUser = localStorage.getItem('mothUserName') || 'Anonymous';
+          currentUserDisplayName = currentUser;
+          
+          scores.push({
+            address: currentUserDisplayName,
+            points: currentScore,
+            identifier: currentUserIdentifier,
+            isWalletAddress: isCurrentWallet
+          });
+        }
       }
       
       // If no real scores, add some sample data
       if (scores.length === 0) {
         scores.push(
-          { address: 'Anonymous Player', points: 0 },
-          { address: 'Moth Master', points: 0 },
-          { address: 'Light Seeker', points: 0 }
+          { address: 'Anonymous Player', points: 0, identifier: 'sample1', isWalletAddress: false },
+          { address: 'Moth Master', points: 0, identifier: 'sample2', isWalletAddress: false },
+          { address: 'Light Seeker', points: 0, identifier: 'sample3', isWalletAddress: false }
         );
       }
       
@@ -57,7 +112,10 @@ const Leaderboard: React.FC = () => {
           rank: index + 1,
           address: score.address,
           points: score.points,
-          badge: index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : ''
+          badge: index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '',
+          isCurrentUser: walletConnected && walletAddress ? 
+            score.identifier === walletAddress : 
+            score.identifier === 'current'
         }));
       
       return sortedScores;
@@ -71,20 +129,7 @@ const Leaderboard: React.FC = () => {
     }, 30000);
     
     return () => clearInterval(interval);
-  }, []);
-
-  // Save score to localStorage when component mounts
-  useEffect(() => {
-    const currentScore = parseInt(localStorage.getItem('currentMothScore') || '0');
-    if (currentScore > 0) {
-      const timestamp = Date.now();
-      const scoreKey = `mothScore_${timestamp}`;
-      localStorage.setItem(scoreKey, currentScore.toString());
-      
-      const userName = localStorage.getItem('mothUserName') || 'Anonymous';
-      localStorage.setItem(`mothUserName_${timestamp}`, userName);
-    }
-  }, []);
+  }, [walletAddress, walletConnected]);
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -118,6 +163,8 @@ const Leaderboard: React.FC = () => {
                 transition={{ delay: index * 0.1 }}
                 className={`grid grid-cols-4 gap-2 p-3 hover:bg-orange-800/20 transition-colors ${
                   player.rank <= 3 ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10' : ''
+                } ${
+                  player.isCurrentUser ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-l-4 border-blue-400' : ''
                 }`}
               >
                 <div className="text-center">
@@ -132,14 +179,21 @@ const Leaderboard: React.FC = () => {
                 </div>
                 
                 <div className="text-center">
-                  <span className="text-orange-200 px-1 py-1 rounded text-xs">
+                  <span className={`px-1 py-1 rounded text-xs ${
+                    player.isCurrentUser ? 'text-blue-200 font-semibold' : 'text-orange-200'
+                  }`}>
                     {player.address}
+                    {player.isCurrentUser && (
+                      <span className="ml-1 text-blue-300">👤</span>
+                    )}
                   </span>
                 </div>
                 
                 <div className="text-center">
                   <motion.span 
-                    className="text-white font-bold text-sm"
+                    className={`font-bold text-sm ${
+                      player.isCurrentUser ? 'text-blue-200' : 'text-white'
+                    }`}
                     animate={{ 
                       textShadow: player.rank <= 3 ? [
                         '0 0 5px rgba(255, 255, 255, 0.5)', 
@@ -179,7 +233,7 @@ const Leaderboard: React.FC = () => {
 
       <div className="mt-6 text-center">
         <p className="text-orange-300 text-sm">
-          Leaderboard updates every 30 seconds. Play the moth survival game to climb the ranks! 🦋
+          Leaderboard updates every 30 seconds. {walletConnected ? 'Your wallet scores are highlighted!' : 'Connect a wallet to save your high scores!'} 🦋
         </p>
       </div>
     </div>
