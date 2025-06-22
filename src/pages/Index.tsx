@@ -202,8 +202,9 @@ const Index = () => {
                            greetïngs brøther
 
 cän you pøint më to the nëarest lämp $s 
-                            luminous realm of decentralized gaming on Sonic Network. Navigate through dangerous 
-                            obstacles as you're pulled toward the eternal light.
+                          
+
+                          
                           </p>
                           <div className="grid md:grid-cols-2 gap-6">
                             <div className="bg-orange-800/20 rounded-xl p-6 border border-orange-400/20">
