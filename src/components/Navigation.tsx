@@ -13,6 +13,8 @@ interface NavigationProps {
   onShowLeaderboard?: () => void;
   onShowAbout?: () => void;
   onBalanceUpdate?: (balances: { sonic: string; moth: string }) => void;
+  walletAddress?: string;
+  onWalletConnectWithAddress?: (connected: boolean, address?: string) => void;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ 
@@ -25,6 +27,8 @@ const Navigation: React.FC<NavigationProps> = ({
   onShowLeaderboard,
   onShowAbout,
   onBalanceUpdate
+  walletAddress,
+  onWalletConnectWithAddress
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -150,6 +154,8 @@ const Navigation: React.FC<NavigationProps> = ({
                       userPoints={userPoints}
                       onWalletConnect={onWalletConnect}
                       onBalanceUpdate={onBalanceUpdate}
+                      walletAddress={walletAddress}
+                      onWalletConnectWithAddress={onWalletConnectWithAddress}
                     />
                   </div>
                 </div>
@@ -227,6 +233,8 @@ const Navigation: React.FC<NavigationProps> = ({
                 userPoints={userPoints}
                 onWalletConnect={onWalletConnect}
                 onBalanceUpdate={onBalanceUpdate}
+                walletAddress={walletAddress}
+                onWalletConnectWithAddress={onWalletConnectWithAddress}
               />
             </div>
           </div>

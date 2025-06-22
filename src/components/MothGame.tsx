@@ -4,6 +4,9 @@ import Leaderboard from './Leaderboard';
 
 interface MothGameProps {
   onScoreUpdate: (points: number) => void;
+  walletConnected?: boolean;
+  walletAddress?: string;
+  onWalletConnect?: (connected: boolean) => void;
 }
 
 interface GameObject {
@@ -31,7 +34,7 @@ interface BackgroundMoth {
   opacity: number;
 }
 
-const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
+const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, walletAddress, onWalletConnect }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameLoopRef = useRef<number>();
   const [gameState, setGameState] = useState<'menu' | 'playing' | 'gameOver'>('menu');
@@ -41,6 +44,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
   const [hitTint, setHitTint] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
+  const [showWalletPrompt, setShowWalletPrompt] = useState(false);
+  const [tempPlayerName, setTempPlayerName] = useState('');
 
   const gameStateRef = useRef({
     moth: { x: 100, y: 250, width: 50, height: 35, velocityY: 0 },
@@ -487,7 +492,17 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
             if (newLives <= 0) {
               setGameState('gameOver');
               setFinalScore(state.continuousScore);
-              onScoreUpdate(state.continuousScore);
+              
+              // Save score based on wallet connection status
+              if (walletConnected && walletAddress) {
+                // Save with wallet address
+                localStorage.setItem(`mothScore_${walletAddress}`, state.continuousScore.toString());
+                onScoreUpdate(state.continuousScore);
+              } else {
+                // Show wallet prompt for non-connected users
+                setShowWalletPrompt(true);
+                onScoreUpdate(state.continuousScore);
+              }
             }
             return newLives;
           });
@@ -517,7 +532,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     drawMobileControls(ctx, canvas.width);
     
     gameLoopRef.current = requestAnimationFrame(gameLoop);
-  }, [gameState, lives, onScoreUpdate, hitTint]);
+  }, [gameState, lives, onScoreUpdate, hitTint, walletConnected, walletAddress]);
 
   useEffect(() => {
     gameLoopRef.current = requestAnimationFrame(gameLoop);
@@ -656,6 +671,26 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     };
   }, [isMobile, gameState]);
 
+  const handleSaveWithName = () => {
+    const timestamp = Date.now();
+    const scoreKey = `mothScore_${timestamp}`;
+    localStorage.setItem(scoreKey, finalScore.toString());
+    
+    if (tempPlayerName.trim()) {
+      localStorage.setItem(`mothUserName_${timestamp}`, tempPlayerName.trim());
+    }
+    
+    setShowWalletPrompt(false);
+    setTempPlayerName('');
+  };
+
+  const handleConnectWallet = () => {
+    if (onWalletConnect) {
+      onWalletConnect(true);
+    }
+    setShowWalletPrompt(false);
+  };
+
   const startGame = () => {
     resetGame();
     setGameState('playing');
@@ -782,9 +817,76 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
               
               {/* Embedded Leaderboard */}
               <div className="border-t border-orange-500/30 pt-6">
-                <Leaderboard />
+                <Leaderboard walletAddress={walletAddress} walletConnected={walletConnected} />
               </div>
             </div>
+          </div>
+        )}
+        
+        {/* Wallet Prompt Modal for Game Over */}
+        {showWalletPrompt && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm rounded-lg z-10">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className={`bg-gradient-to-br from-black via-gray-900 to-orange-900 rounded-2xl border border-orange-500/30 p-6 ${isMobile ? 'w-full max-w-sm mx-4' : 'max-w-md w-full'}`}
+            >
+              <div className="text-center">
+                <h3 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-white mb-4`}>Save Your Score!</h3>
+                <p className="text-orange-200 mb-6 text-sm">
+                  Final Score: <span className="font-bold text-lg text-white">{finalScore.toLocaleString()}</span>
+                </p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-orange-200 text-sm mb-2">Enter your name (optional)</label>
+                    <input
+                      type="text"
+                      value={tempPlayerName}
+                      onChange={(e) => setTempPlayerName(e.target.value)}
+                      placeholder="Your display name"
+                      className="w-full px-3 py-2 bg-black/50 border border-orange-500/30 rounded-lg text-white text-sm focus:outline-none focus:border-orange-500"
+                      maxLength={20}
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col space-y-3">
+                    <motion.button
+                      onClick={handleConnectWallet}
+                      className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div className="flex items-center justify-center space-x-2">
+                        <span>🐰</span>
+                        <span>Connect Wallet & Save</span>
+                      </div>
+                    </motion.button>
+                    
+                    <motion.button
+                      onClick={handleSaveWithName}
+                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Save Without Wallet
+                    </motion.button>
+                    
+                    <motion.button
+                      onClick={() => setShowWalletPrompt(false)}
+                      className="w-full text-orange-300 hover:text-orange-200 underline text-sm"
+                      whileHover={{ scale: 1.05 }}
+                    >
+                      Skip
+                    </motion.button>
+                  </div>
+                </div>
+                
+                <p className="text-orange-400 text-xs mt-4">
+                  Connect a wallet to permanently save your high scores with your address!
+                </p>
+              </div>
+            </motion.div>
           </div>
         )}
       </div>

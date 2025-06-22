@@ -7,6 +7,8 @@ interface WalletDropdownProps {
   userPoints: number;
   onWalletConnect: (connected: boolean) => void;
   onBalanceUpdate?: (balances: { sonic: string; moth: string }) => void;
+  walletAddress?: string;
+  onWalletConnectWithAddress?: (connected: boolean, address?: string) => void;
 }
 
 const WalletDropdown: React.FC<WalletDropdownProps> = ({
@@ -14,13 +16,15 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
   balances,
   userPoints,
   onWalletConnect,
-  onBalanceUpdate
+  onBalanceUpdate,
+  walletAddress: propWalletAddress,
+  onWalletConnectWithAddress
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [userName, setUserName] = useState(localStorage.getItem('mothUserName') || '');
   const [isEditingName, setIsEditingName] = useState(false);
-  const [walletAddress, setWalletAddress] = useState<string>('');
+  const [walletAddress, setWalletAddress] = useState<string>(propWalletAddress || '');
   const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [currentBalances, setCurrentBalances] = useState({ sonic: '0.00', moth: '0.00' });
@@ -56,6 +60,9 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
         .then((accounts: string[]) => {
           if (accounts.length > 0) {
             setWalletAddress(accounts[0]);
+            if (onWalletConnectWithAddress) {
+              onWalletConnectWithAddress(true, accounts[0]);
+            }
             updateBalances(accounts[0]);
           }
         });
@@ -172,6 +179,9 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
         if (accounts.length > 0) {
           await checkAndSwitchNetwork(window.ethereum);
           setWalletAddress(accounts[0]);
+          if (onWalletConnectWithAddress) {
+            onWalletConnectWithAddress(true, accounts[0]);
+          }
           await updateBalances(accounts[0]);
           onWalletConnect(true);
         }
@@ -191,6 +201,9 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
 
   const handleDisconnect = () => {
     onWalletConnect(false);
+    if (onWalletConnectWithAddress) {
+      onWalletConnectWithAddress(false);
+    }
     setWalletAddress('');
     setCurrentBalances({ sonic: '0.00', moth: '0.00' });
     setIsOpen(false);
@@ -198,6 +211,10 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
 
   const handleSaveName = () => {
     localStorage.setItem('mothUserName', userName);
+    // Also save wallet-specific display name if connected
+    if (walletConnected && walletAddress) {
+      localStorage.setItem(`mothWalletName_${walletAddress}`, userName);
+    }
     setIsEditingName(false);
   };
 

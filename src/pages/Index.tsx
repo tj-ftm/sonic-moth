@@ -10,6 +10,7 @@ import Navigation from '../components/Navigation';
 const Index = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [walletConnected, setWalletConnected] = useState(false);
+  const [walletAddress, setWalletAddress] = useState<string>('');
   const [userPoints, setUserPoints] = useState(0);
   const [balances, setBalances] = useState({ sonic: '0.00', moth: '0.00' });
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -26,6 +27,16 @@ const Index = () => {
     setBalances(newBalances);
   };
 
+  // Handle wallet connection with address
+  const handleWalletConnect = (connected: boolean, address?: string) => {
+    setWalletConnected(connected);
+    if (connected && address) {
+      setWalletAddress(address);
+    } else if (!connected) {
+      setWalletAddress('');
+    }
+  };
+
   // Load saved score on component mount
   useEffect(() => {
     const savedScore = localStorage.getItem('currentMothScore');
@@ -33,6 +44,18 @@ const Index = () => {
       setUserPoints(parseInt(savedScore));
     }
   }, []);
+
+  // Get wallet address when connected
+  useEffect(() => {
+    if (walletConnected && typeof window.ethereum !== 'undefined') {
+      window.ethereum.request({ method: 'eth_accounts' })
+        .then((accounts: string[]) => {
+          if (accounts.length > 0) {
+            setWalletAddress(accounts[0]);
+          }
+        });
+    }
+  }, [walletConnected]);
 
   // Handle navigation from leaderboard button
   useEffect(() => {
@@ -64,6 +87,8 @@ const Index = () => {
           onShowLeaderboard={activeTab === 'home' ? () => setShowLeaderboard(true) : undefined}
           onShowAbout={activeTab === 'home' ? () => setShowAbout(true) : undefined}
           onBalanceUpdate={handleBalanceUpdate}
+          walletAddress={walletAddress}
+          onWalletConnectWithAddress={handleWalletConnect}
         />
         
         <div className="container mx-auto px-4 py-8">
@@ -90,7 +115,12 @@ const Index = () => {
                   </motion.h2>
                 </div>
                 
-                <MothGame onScoreUpdate={handleScoreUpdate} />
+                <MothGame 
+                  onScoreUpdate={handleScoreUpdate} 
+                  walletConnected={walletConnected}
+                  walletAddress={walletAddress}
+                  onWalletConnect={setWalletConnected}
+                />
                 
                 {/* Hovering Leaderboard Modal */}
                 <AnimatePresence>
@@ -122,7 +152,7 @@ const Index = () => {
                             ✕
                           </motion.button>
                         </div>
-                        <Leaderboard />
+                        <Leaderboard walletAddress={walletAddress} walletConnected={walletConnected} />
                       </motion.div>
                     </motion.div>
                   )}
