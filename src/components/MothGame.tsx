@@ -46,7 +46,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
   const [finalScore, setFinalScore] = useState(0);
   const [showWalletPrompt, setShowWalletPrompt] = useState(false);
   const [tempPlayerName, setTempPlayerName] = useState('');
-  const [touchSensitivity, setTouchSensitivity] = useState(5); // Increased sensitivity
 
   const gameStateRef = useRef({
     moth: { x: 100, y: 250, width: 50, height: 35, velocityY: 0 },
@@ -554,7 +553,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
   useEffect(() => {
     let isDragging = false;
     let lastTouchY = 0;
-    let activeTouches = new Map(); // Track multiple touches
+    let touchSensitivity = 3; // Increased sensitivity multiplier
     
     const handleKeyDown = (e: KeyboardEvent) => {
       const state = gameStateRef.current;
@@ -600,25 +599,20 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
       
       e.preventDefault();
       const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const touch = e.touches[0];
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
       
       const state = gameStateRef.current;
       
-      // Handle multiple touches
-      for (let i = 0; i < e.touches.length; i++) {
-        const touch = e.touches[i];
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
-        
-        activeTouches.set(touch.identifier, { x, y, startY: y });
-        
-        // Right side of screen for shooting
-        if (x > rect.width / 2) {
-          state.keys.space = true;
-        } else {
-          // Left side for drag movement
-          isDragging = true;
-          lastTouchY = y;
-        }
+      // Right side of screen for shooting
+      if (x > rect.width / 2) {
+        state.keys.space = true;
+      } else {
+        // Left side for drag movement
+        isDragging = true;
+        lastTouchY = y;
       }
     };
 
@@ -630,43 +624,31 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
       
       e.preventDefault();
       const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      const y = touch.clientY - rect.top;
       
-      const state = gameStateRef.current;
-      
-      // Handle multiple touch movements
-      for (let i = 0; i < e.touches.length; i++) {
-        const touch = e.touches[i];
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
+      if (isDragging) {
+        const deltaY = (y - lastTouchY) * touchSensitivity;
+        const state = gameStateRef.current;
         
-        const storedTouch = activeTouches.get(touch.identifier);
-        if (!storedTouch) continue;
-        
-        // Left side movement with increased sensitivity
-        if (x <= rect.width / 2 && isDragging) {
-          const deltaY = (y - storedTouch.y) * touchSensitivity;
-          
-          // More sensitive movement detection
-          if (deltaY < -1) { // Very sensitive - dragging up
-            state.keys.up = true;
-            state.keys.down = false;
-          } else if (deltaY > 1) { // Very sensitive - dragging down
-            state.keys.down = true;
-            state.keys.up = false;
-          } else {
-            state.keys.up = false;
-            state.keys.down = false;
-          }
-          
-          // Update stored position
-          activeTouches.set(touch.identifier, { ...storedTouch, y });
+        // Move moth based on drag direction
+        if (deltaY < -2) { // More sensitive - dragging up
+          state.keys.up = true;
+          state.keys.down = false;
+        } else if (deltaY > 2) { // More sensitive - dragging down
+          state.keys.down = true;
+          state.keys.up = false;
+        } else if (Math.abs(deltaY) > 8) { // Large movements
+          // Handle large movements more aggressively
+          state.keys.down = true;
+          state.keys.up = false;
+        } else {
+          state.keys.up = false;
+          state.keys.down = false;
         }
         
-        // Right side shooting
-        if (x > rect.width / 2) {
-          state.keys.space = true;
-        }
       }
+      lastTouchY = y;
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
@@ -674,18 +656,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
       
       e.preventDefault();
       const state = gameStateRef.current;
-      
-      // Remove ended touches
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const touch = e.changedTouches[i];
-        activeTouches.delete(touch.identifier);
-      }
-      
-      // If no touches remain, stop all movement
-      if (activeTouches.size === 0) {
-        isDragging = false;
-      }
-      
+      isDragging = false;
       state.keys.up = false;
       state.keys.down = false;
       state.keys.space = false;
@@ -693,8 +664,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
 
     // Prevent default touch behaviors that might interfere
     const preventDefaultTouch = (e: TouchEvent) => {
-      const canvas = canvasRef.current;
-      if (canvas && e.target === canvas) {
+      if (e.target === canvas) {
         e.preventDefault();
       }
     };
@@ -774,7 +744,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
           ref={canvasRef}
           width={isMobile ? 350 : 800}
           height={isMobile ? 450 : 500}
-          className={`game-canvas multi-touch border border-orange-500/30 rounded-lg shadow-2xl shadow-orange-500/20 ${isMobile ? 'w-full max-w-sm' : ''}`}
+          className={`border border-orange-500/30 rounded-lg shadow-2xl shadow-orange-500/20 ${isMobile ? 'w-full max-w-sm' : ''}`}
           animate={isShaking ? { 
             x: [0, -5, 5, -5, 5, 0],
             y: [0, -2, 2, -2, 2, 0]
@@ -791,7 +761,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
         {/* Mobile Touch Control Indicators */}
         
         {gameState === 'menu' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-lg multi-touch">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-lg">
             <div className="text-center p-6">
               <motion.div
                 className="mb-6"
@@ -808,7 +778,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
               
               <motion.button
                 onClick={startGame}
-                className={`multi-touch touch-feedback bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-4 px-6 text-base' : 'py-4 px-8 text-lg'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30`}
+                className={`bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-4 px-6 text-base' : 'py-4 px-8 text-lg'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 touch-manipulation clickable`}
                 style={{ 
                   touchAction: 'manipulation',
                   WebkitTapHighlightColor: 'transparent',
@@ -818,6 +788,10 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                 }}
                 whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.6)' }}
                 whileTap={{ scale: 0.95 }}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
               >
                 <div className="flex items-center space-x-2">
                   <span>🦋</span>
@@ -849,15 +823,15 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
         )}
         
         {gameState === 'gameOver' && (
-          <div className="mobile-modal">
-            <div className={`mobile-modal-content ${isMobile ? 'w-full max-w-sm mx-4' : 'max-w-2xl w-full'} relative`}>
+          <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm rounded-lg">
+            <div className={`bg-gradient-to-br from-black via-gray-900 to-orange-900 rounded-2xl border border-orange-500/30 p-6 ${isMobile ? 'w-full max-w-sm mx-4 mt-16' : 'max-w-2xl w-full'} max-h-[80vh] overflow-y-auto scrollbar-hide relative`}>
               {/* Close Button */}
               <motion.button
                 onClick={() => {
                   setGameState('menu');
                   resetGame();
                 }}
-                className="multi-touch touch-feedback absolute top-4 right-4 text-orange-300 hover:text-orange-200 text-xl z-10"
+                className="absolute top-4 right-4 text-orange-300 hover:text-orange-200 text-xl z-10 touch-manipulation"
                 style={{ touchAction: 'manipulation' }}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -875,7 +849,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                       setGameState('menu');
                       resetGame();
                     }}
-                    className={`multi-touch touch-feedback bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-6 text-base'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30`}
+                    className={`bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-6 text-base'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 touch-manipulation clickable`}
                     style={{ 
                       touchAction: 'manipulation',
                       WebkitTapHighlightColor: 'transparent',
@@ -884,6 +858,12 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                     }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => {
+                      e.stopPropagation();
+                      setGameState('menu');
+                      resetGame();
+                    }}
                   >
                     <div className="flex items-center space-x-2">
                       <span>🦋</span>
@@ -893,7 +873,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                   
                   <motion.button
                     onClick={startGame}
-                    className={`multi-touch touch-feedback bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-6 text-base'} rounded-full shadow-lg shadow-green-500/25 border border-green-400/30`}
+                    className={`bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-6 text-base'} rounded-full shadow-lg shadow-green-500/25 border border-green-400/30 touch-manipulation clickable`}
                     style={{ 
                       touchAction: 'manipulation',
                       WebkitTapHighlightColor: 'transparent',
@@ -902,6 +882,11 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                     }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => {
+                      e.stopPropagation();
+                      startGame();
+                    }}
                   >
                     <div className="flex items-center space-x-2">
                       <span>🚀</span>
@@ -921,11 +906,11 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
         
         {/* Wallet Prompt Modal for Game Over */}
         {showWalletPrompt && (
-          <div className="mobile-modal z-10">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm rounded-lg z-10">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className={`mobile-modal-content ${isMobile ? 'w-full max-w-sm mx-4' : 'max-w-md w-full'}`}
+              className={`bg-gradient-to-br from-black via-gray-900 to-orange-900 rounded-2xl border border-orange-500/30 p-6 ${isMobile ? 'w-full max-w-sm mx-4' : 'max-w-md w-full'}`}
             >
               <div className="text-center">
                 <h3 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-white mb-4`}>Save Your Score!</h3>
@@ -949,7 +934,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                   <div className="flex flex-col space-y-3">
                     <motion.button
                       onClick={handleConnectWallet}
-                      className="multi-touch touch-feedback w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg"
+                      className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg touch-manipulation clickable"
                       style={{ 
                         touchAction: 'manipulation',
                         WebkitTapHighlightColor: 'transparent',
@@ -958,6 +943,11 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                       }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
+                      onTouchStart={(e) => e.stopPropagation()}
+                      onTouchEnd={(e) => {
+                        e.stopPropagation();
+                        handleConnectWallet();
+                      }}
                     >
                       <div className="flex items-center justify-center space-x-2">
                         <span>🐰</span>
@@ -967,7 +957,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                     
                     <motion.button
                       onClick={handleSaveWithName}
-                      className="multi-touch touch-feedback w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg"
+                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg touch-manipulation clickable"
                       style={{ 
                         touchAction: 'manipulation',
                         WebkitTapHighlightColor: 'transparent',
@@ -976,13 +966,18 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                       }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
+                      onTouchStart={(e) => e.stopPropagation()}
+                      onTouchEnd={(e) => {
+                        e.stopPropagation();
+                        handleSaveWithName();
+                      }}
                     >
                       Save Without Wallet
                     </motion.button>
                     
                     <motion.button
                       onClick={() => setShowWalletPrompt(false)}
-                      className="multi-touch touch-feedback w-full text-orange-300 hover:text-orange-200 underline text-sm"
+                      className="w-full text-orange-300 hover:text-orange-200 underline text-sm touch-manipulation clickable"
                       style={{ 
                         touchAction: 'manipulation',
                         WebkitTapHighlightColor: 'transparent',
@@ -991,6 +986,11 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                         padding: '12px'
                       }}
                       whileHover={{ scale: 1.05 }}
+                      onTouchStart={(e) => e.stopPropagation()}
+                      onTouchEnd={(e) => {
+                        e.stopPropagation();
+                        setShowWalletPrompt(false);
+                      }}
                     >
                       Skip
                     </motion.button>
