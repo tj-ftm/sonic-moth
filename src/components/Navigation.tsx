@@ -66,10 +66,25 @@ const Navigation: React.FC<NavigationProps> = ({
             {/* Mobile Menu Button - Three Lines Only */}
             <motion.button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="bg-black/20 backdrop-blur-md rounded-full p-3 border border-orange-500/30 flex flex-col justify-center items-center space-y-1 touch-manipulation"
-              style={{ touchAction: 'manipulation' }}
+              className="bg-black/20 backdrop-blur-md rounded-full p-3 border border-orange-500/30 flex flex-col justify-center items-center space-y-1 touch-manipulation clickable"
+              style={{ 
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+                cursor: 'pointer',
+                minHeight: '48px',
+                minWidth: '48px'
+              }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onTouchStart={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsMenuOpen(!isMenuOpen);
+              }}
             >
               <div className="w-5 h-0.5 bg-orange-400 rounded"></div>
               <div className="w-5 h-0.5 bg-orange-400 rounded"></div>
@@ -85,7 +100,10 @@ const Navigation: React.FC<NavigationProps> = ({
               }}
               transition={{ duration: 0.3, ease: 'easeInOut' }}
               className="fixed right-0 top-0 h-full w-64 bg-gradient-to-br from-black via-gray-900 to-orange-900 border-l border-orange-500/30 backdrop-blur-md z-50 touch-manipulation"
-              style={{ touchAction: 'manipulation' }}
+              style={{ 
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
+              }}
             >
               <div className="p-4 space-y-4">
                 {/* Close Button */}
@@ -93,8 +111,17 @@ const Navigation: React.FC<NavigationProps> = ({
                   <h3 className="text-orange-200 font-semibold text-lg">Menu</h3>
                   <motion.button
                     onClick={() => setIsMenuOpen(false)}
-                    className="text-orange-300 hover:text-orange-200 text-xl touch-manipulation"
-                    style={{ touchAction: 'manipulation' }}
+                    className="text-orange-300 hover:text-orange-200 text-xl touch-manipulation clickable"
+                    style={{ 
+                      touchAction: 'manipulation',
+                      WebkitTapHighlightColor: 'transparent',
+                      cursor: 'pointer',
+                      minHeight: '44px',
+                      minWidth: '44px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                   >
@@ -108,8 +135,13 @@ const Navigation: React.FC<NavigationProps> = ({
                     setActiveTab('home');
                     setIsMenuOpen(false);
                   }}
-                  className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 flex items-center space-x-2 touch-manipulation"
-                  style={{ touchAction: 'manipulation' }}
+                  className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 flex items-center space-x-2 touch-manipulation clickable"
+                  style={{ 
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                    cursor: 'pointer',
+                    minHeight: '48px'
+                  }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -124,8 +156,13 @@ const Navigation: React.FC<NavigationProps> = ({
                       onShowLeaderboard();
                       setIsMenuOpen(false);
                     }}
-                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 flex items-center space-x-2 touch-manipulation"
-                    style={{ touchAction: 'manipulation' }}
+                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 flex items-center space-x-2 touch-manipulation clickable"
+                    style={{ 
+                      touchAction: 'manipulation',
+                      WebkitTapHighlightColor: 'transparent',
+                      cursor: 'pointer',
+                      minHeight: '48px'
+                    }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -141,8 +178,13 @@ const Navigation: React.FC<NavigationProps> = ({
                       onShowAbout();
                       setIsMenuOpen(false);
                     }}
-                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 flex items-center space-x-2 touch-manipulation"
-                    style={{ touchAction: 'manipulation' }}
+                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 flex items-center space-x-2 touch-manipulation clickable"
+                    style={{ 
+                      touchAction: 'manipulation',
+                      WebkitTapHighlightColor: 'transparent',
+                      cursor: 'pointer',
+                      minHeight: '48px'
+                    }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -174,8 +216,11 @@ const Navigation: React.FC<NavigationProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 touch-manipulation"
-                style={{ touchAction: 'manipulation' }}
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 touch-manipulation modal-overlay"
+                style={{ 
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent'
+                }}
                 onClick={() => setIsMenuOpen(false)}
               />
             )}

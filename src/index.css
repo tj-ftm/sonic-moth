@@ -119,34 +119,69 @@
 }
 
 /* Prevent zoom on double tap for buttons */
-button {
+button, 
+[role="button"],
+.clickable {
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 /* Improve mobile touch targets */
 @media (max-width: 768px) {
   button, 
   [role="button"], 
-  .touch-manipulation {
+  .clickable,
+  .touch-manipulation,
+  canvas {
     min-height: 44px;
     min-width: 44px;
+    cursor: pointer;
   }
   
-  /* Prevent text selection on touch */
-  * {
+  /* Improve touch responsiveness */
+  button,
+  [role="button"],
+  .clickable {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
   }
   
-  /* Allow text selection for inputs */
+  /* Allow text selection for inputs and text areas */
   input, textarea {
     -webkit-user-select: text;
     -moz-user-select: text;
     -ms-user-select: text;
     user-select: text;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Ensure canvas is touchable */
+  canvas {
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Fix for modal overlays */
+  .modal-overlay {
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
 }
