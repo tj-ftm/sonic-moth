@@ -55,6 +55,7 @@ const Index = () => {
           balances={balances}
           userPoints={userPoints}
           onWalletConnect={setWalletConnected}
+          onShowLeaderboard={activeTab === 'home' ? () => setShowLeaderboard(true) : undefined}
         />
         
         <div className="container mx-auto px-4 py-8">
@@ -68,26 +69,15 @@ const Index = () => {
                 transition={{ duration: 0.5 }}
                 className="relative"
               >
-                <div className="flex items-center justify-center space-x-4 mb-6">
-                  <motion.h2 
-                    className="text-2xl md:text-4xl font-bold text-center bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent"
-                    animate={{ 
-                      filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.7))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
-                    }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                  >
-                    Moth Survival
-                  </motion.h2>
-                  
-                  <motion.button
-                    onClick={() => setShowLeaderboard(true)}
-                    className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-2 px-4 rounded-full text-sm shadow-lg shadow-orange-500/25 border border-orange-400/30"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    🏆 Leaderboard
-                  </motion.button>
-                </div>
+                <motion.h2 
+                  className="text-2xl md:text-4xl font-bold text-center bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent mb-6"
+                  animate={{ 
+                    filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.7))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  Moth Survival
+                </motion.h2>
                 
                 <MothGame onScoreUpdate={handleScoreUpdate} />
                 
@@ -126,18 +116,6 @@ const Index = () => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </motion.div>
-            )}
-
-            {activeTab === 'leaderboard' && (
-              <motion.div
-                key="leaderboard"
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -50 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Leaderboard />
               </motion.div>
             )}
 
