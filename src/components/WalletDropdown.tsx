@@ -158,25 +158,27 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
 
   if (!walletConnected) {
     return (
-      <motion.button
-        onClick={handleConnect}
-        disabled={isConnecting}
-        className={`${isMobile ? 'w-full' : ''} bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-4 text-sm' : 'py-3 px-6 text-sm'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 ${!isMobile ? 'ml-2' : ''} disabled:opacity-50 disabled:cursor-not-allowed`}
-        whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <div className="flex items-center space-x-2">
-          <span>🐰</span>
-          <span>{isConnecting ? 'Connecting...' : 'Connect Rabby'}</span>
-          {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>}
-        </div>
-      </motion.button>
-      
-      {error && (
-        <div className="absolute top-full mt-2 right-0 bg-red-500/20 border border-red-500/50 rounded-lg p-3 z-50">
-          <p className="text-red-200 text-sm max-w-xs">{error}</p>
-        </div>
-      )}
+      <>
+        <motion.button
+          onClick={handleConnect}
+          disabled={isConnecting}
+          className={`${isMobile ? 'w-full' : ''} bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-4 text-sm' : 'py-3 px-6 text-sm'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 ${!isMobile ? 'ml-2' : ''} disabled:opacity-50 disabled:cursor-not-allowed`}
+          whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <div className="flex items-center space-x-2">
+            <span>🐰</span>
+            <span>{isConnecting ? 'Connecting...' : 'Connect Rabby'}</span>
+            {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>}
+          </div>
+        </motion.button>
+        
+        {error && (
+          <div className="absolute top-full mt-2 right-0 bg-red-500/20 border border-red-500/50 rounded-lg p-3 z-50">
+            <p className="text-red-200 text-sm max-w-xs">{error}</p>
+          </div>
+        )}
+      </>
     );
   }
 
