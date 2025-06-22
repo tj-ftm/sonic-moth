@@ -21,6 +21,15 @@ interface Projectile extends GameObject {
   speedX: number;
 }
 
+interface BackgroundMoth {
+  x: number;
+  y: number;
+  speedX: number;
+  speedY: number;
+  size: number;
+  opacity: number;
+}
+
 const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameLoopRef = useRef<number>();
@@ -30,11 +39,13 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
   const [level, setLevel] = useState(1);
   const [isShaking, setIsShaking] = useState(false);
   const [hitTint, setHitTint] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const gameStateRef = useRef({
-    moth: { x: 400, y: 250, width: 50, height: 35, velocityY: 0 },
+    moth: { x: 100, y: 250, width: 50, height: 35, velocityY: 0 },
     obstacles: [] as Obstacle[],
     projectiles: [] as Projectile[],
+    backgroundMoths: [] as BackgroundMoth[],
     keys: { up: false, down: false, space: false },
     lastObstacleSpawn: 0,
     invulnerable: 0,
@@ -43,16 +54,41 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     lastProjectileTime: 0
   });
 
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const resetGame = () => {
     setLives(3);
     setScore(0);
     setLevel(1);
     setIsShaking(false);
     setHitTint(false);
+    
+    // Initialize background moths for menu
+    const backgroundMoths: BackgroundMoth[] = [];
+    for (let i = 0; i < 8; i++) {
+      backgroundMoths.push({
+        x: Math.random() * 800,
+        y: Math.random() * 500,
+        speedX: 0.5 + Math.random() * 1,
+        speedY: (Math.random() - 0.5) * 0.5,
+        size: 15 + Math.random() * 10,
+        opacity: 0.3 + Math.random() * 0.4
+      });
+    }
+    
     gameStateRef.current = {
-      moth: { x: 400, y: 250, width: 50, height: 35, velocityY: 0 },
+      moth: { x: 100, y: 250, width: 50, height: 35, velocityY: 0 },
       obstacles: [],
       projectiles: [],
+      backgroundMoths,
       keys: { up: false, down: false, space: false },
       lastObstacleSpawn: 0,
       invulnerable: 0,
@@ -67,15 +103,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
            rect1.x + rect1.width > rect2.x &&
            rect1.y < rect2.y + rect2.height &&
            rect1.y + rect1.height > rect2.y;
-  };
-
-  const drawGlowingRect = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string, glowColor: string) => {
-    ctx.save();
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = glowColor;
-    ctx.fillStyle = color;
-    ctx.fillRect(x, y, width, height);
-    ctx.restore();
   };
 
   const drawMoth = (ctx: CanvasRenderingContext2D, moth: GameObject, time: number, isHit: boolean) => {
@@ -102,6 +129,35 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     // Right wing
     ctx.beginPath();
     ctx.ellipse(moth.x + 38, moth.y + 8 - flapOffset, 15, 20, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+  };
+
+  const drawBackgroundMoth = (ctx: CanvasRenderingContext2D, moth: BackgroundMoth, time: number) => {
+    ctx.save();
+    ctx.globalAlpha = moth.opacity;
+    
+    const flapOffset = Math.sin(time * 0.005 + moth.x * 0.01) * 2;
+    
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#FB923C';
+    ctx.fillStyle = '#F97316';
+    
+    // Body
+    ctx.fillRect(moth.x + moth.size * 0.3, moth.y + moth.size * 0.35, moth.size * 0.4, moth.size * 0.2);
+    
+    // Wings
+    ctx.fillStyle = '#FB7185';
+    
+    // Left wing
+    ctx.beginPath();
+    ctx.ellipse(moth.x + moth.size * 0.25, moth.y + moth.size * 0.2 + flapOffset, moth.size * 0.3, moth.size * 0.5, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Right wing
+    ctx.beginPath();
+    ctx.ellipse(moth.x + moth.size * 0.75, moth.y + moth.size * 0.2 - flapOffset, moth.size * 0.3, moth.size * 0.5, 0.3, 0, Math.PI * 2);
     ctx.fill();
     
     ctx.restore();
@@ -144,14 +200,14 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
   const drawObstacle = (ctx: CanvasRenderingContext2D, obstacle: Obstacle, time: number) => {
     ctx.save();
     
-    // Blue rotating wind obstacle
+    // Red glowing rotating wind obstacle
     const rotation = time * 0.005;
     ctx.translate(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2);
     ctx.rotate(rotation);
     
-    ctx.fillStyle = 'rgba(59, 130, 246, 0.8)';
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = '#3B82F6';
+    ctx.fillStyle = 'rgba(220, 38, 38, 0.9)'; // Red color
+    ctx.shadowBlur = 25; // Increased glow
+    ctx.shadowColor = '#DC2626'; // Red glow
     
     // Draw rotating spiral pattern
     for (let i = 0; i < 6; i++) {
@@ -187,7 +243,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
 
   const gameLoop = useCallback((currentTime: number) => {
     const canvas = canvasRef.current;
-    if (!canvas || gameState !== 'playing') return;
+    if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -200,6 +256,26 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     
     // Draw sun glow on the right side
     drawSunGlow(ctx, currentTime);
+    
+    if (gameState === 'menu') {
+      // Update and draw background moths
+      state.backgroundMoths.forEach(moth => {
+        moth.x += moth.speedX;
+        moth.y += moth.speedY;
+        
+        // Reset moth if it goes off screen
+        if (moth.x > canvas.width + moth.size) {
+          moth.x = -moth.size;
+          moth.y = Math.random() * canvas.height;
+        }
+        
+        drawBackgroundMoth(ctx, moth, currentTime);
+      });
+      
+      return;
+    }
+    
+    if (gameState !== 'playing') return;
     
     // Update moth position (only up/down movement)
     const speed = 6;
@@ -225,7 +301,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       state.lastScoreTime = currentTime;
     }
     
-    // Spawn obstacles (only blue rotating wind)
+    // Spawn obstacles (only red glowing rotating wind)
     if (currentTime - state.lastObstacleSpawn > Math.max(1500 - (level * 100), 800)) {
       const numObstacles = Math.random() < 0.3 ? 2 : 1;
       
@@ -310,28 +386,22 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       drawProjectile(ctx, projectile);
     });
     
-    // Draw UI
-    ctx.fillStyle = '#FFD700';
-    ctx.font = '18px Arial';
-    ctx.shadowBlur = 5;
-    ctx.shadowColor = '#FFD700';
-    ctx.fillText(`Score: ${state.continuousScore}`, 20, 30);
-    ctx.fillText(`Level: ${level}`, 20, 55);
-    
     gameLoopRef.current = requestAnimationFrame(gameLoop);
   }, [gameState, lives, level, onScoreUpdate, hitTint]);
 
   useEffect(() => {
-    if (gameState === 'playing') {
-      gameLoopRef.current = requestAnimationFrame(gameLoop);
-    }
+    gameLoopRef.current = requestAnimationFrame(gameLoop);
     
     return () => {
       if (gameLoopRef.current) {
         cancelAnimationFrame(gameLoopRef.current);
       }
     };
-  }, [gameState, gameLoop]);
+  }, [gameLoop]);
+
+  useEffect(() => {
+    resetGame();
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -422,7 +492,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
   return (
     <div className="flex flex-col items-center space-y-6">
       <motion.h2 
-        className="text-4xl font-bold text-center bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent"
+        className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-center bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent`}
         animate={{ 
           filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.7))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
         }}
@@ -431,12 +501,46 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
         Moth to the Light
       </motion.h2>
 
+      {/* Lives and Score Panel */}
+      <div className={`bg-black/40 backdrop-blur-sm rounded-xl border border-orange-500/30 p-4 ${isMobile ? 'w-full max-w-sm' : 'w-auto'}`}>
+        <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center space-x-8'}`}>
+          <div className="flex items-center space-x-2">
+            <span className="text-orange-200 text-sm font-medium">Lives:</span>
+            <div className="flex space-x-1">
+              {[...Array(3)].map((_, index) => (
+                <motion.div
+                  key={index}
+                  className={`${isMobile ? 'text-xl' : 'text-2xl'} ${index < lives ? 'text-red-400' : 'text-gray-600'}`}
+                  animate={index < lives ? { 
+                    filter: ['drop-shadow(0 0 8px rgba(248, 113, 113, 0.8))', 'drop-shadow(0 0 12px rgba(248, 113, 113, 1))', 'drop-shadow(0 0 8px rgba(248, 113, 113, 0.8))']
+                  } : {}}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  ❤️
+                </motion.div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <div className="text-center">
+              <span className="text-orange-200 text-sm">Score</span>
+              <div className="text-white font-bold text-lg">{score.toLocaleString()}</div>
+            </div>
+            <div className="text-center">
+              <span className="text-orange-200 text-sm">Level</span>
+              <div className="text-white font-bold text-lg">{level}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="relative">
         <motion.canvas
           ref={canvasRef}
-          width={800}
-          height={500}
-          className="border border-orange-500/30 rounded-lg shadow-2xl shadow-orange-500/20"
+          width={isMobile ? 350 : 800}
+          height={isMobile ? 250 : 500}
+          className={`border border-orange-500/30 rounded-lg shadow-2xl shadow-orange-500/20 ${isMobile ? 'w-full max-w-sm' : ''}`}
           animate={isShaking ? { 
             x: [0, -5, 5, -5, 5, 0],
             y: [0, -2, 2, -2, 2, 0]
@@ -445,57 +549,75 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
         />
         
         {gameState === 'menu' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-lg">
-            <div className="text-center">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-lg">
+            <div className="text-center p-6">
+              <motion.div
+                className="mb-6"
+                animate={{ 
+                  filter: ['drop-shadow(0 0 20px rgba(249, 115, 22, 0.6))', 'drop-shadow(0 0 30px rgba(249, 115, 22, 0.9))', 'drop-shadow(0 0 20px rgba(249, 115, 22, 0.6))']
+                }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <div className={`${isMobile ? 'text-4xl' : 'text-6xl'} mb-2`}>🦋</div>
+                <div className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-orange-300`}>
+                  Fly to the Light
+                </div>
+              </motion.div>
+              
               <motion.button
                 onClick={startGame}
-                className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg shadow-orange-500/25"
-                whileHover={{ scale: 1.05 }}
+                className={`bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-6 text-base' : 'py-4 px-8 text-lg'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30`}
+                whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.6)' }}
                 whileTap={{ scale: 0.95 }}
               >
-                🦋 Start Game
+                <div className="flex items-center space-x-2">
+                  <span>🦋</span>
+                  <span>Start Game</span>
+                </div>
               </motion.button>
-              <p className="text-orange-200 mt-4 text-sm">
-                Use WASD/Arrow Keys to move up/down, SPACE to shoot!
-              </p>
-              <p className="text-orange-300 mt-2 text-xs">
-                Mobile: Touch left side to move, right side to shoot
-              </p>
+              
+              <div className={`mt-6 space-y-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                <div className="bg-black/40 rounded-lg p-3 border border-orange-500/20">
+                  <p className="text-orange-200 font-medium mb-2">Controls:</p>
+                  {isMobile ? (
+                    <div className="space-y-1 text-orange-300">
+                      <p>• Touch left side: Move up/down</p>
+                      <p>• Touch right side: Shoot light</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1 text-orange-300">
+                      <p>• WASD/Arrow Keys: Move up/down</p>
+                      <p>• SPACE: Shoot glowing light</p>
+                    </div>
+                  )}
+                </div>
+                <p className="text-orange-400 text-xs">
+                  Avoid red obstacles and fly toward the sun!
+                </p>
+              </div>
             </div>
           </div>
         )}
         
         {gameState === 'gameOver' && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm rounded-lg">
-            <div className="text-center">
-              <h3 className="text-3xl font-bold text-white mb-4">Game Over!</h3>
-              <p className="text-xl text-orange-200 mb-4">Final Score: {score}</p>
+            <div className="text-center p-6">
+              <h3 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-white mb-4`}>Game Over!</h3>
+              <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-orange-200 mb-4`}>Final Score: {score.toLocaleString()}</p>
               <motion.button
                 onClick={startGame}
-                className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg shadow-orange-500/25"
+                className={`bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-6 text-base' : 'py-4 px-8 text-lg'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                🦋 Play Again
+                <div className="flex items-center space-x-2">
+                  <span>🦋</span>
+                  <span>Play Again</span>
+                </div>
               </motion.button>
             </div>
           </div>
         )}
-      </div>
-
-      <div className="flex space-x-4">
-        {[...Array(3)].map((_, index) => (
-          <motion.div
-            key={index}
-            className={`text-3xl ${index < lives ? 'text-red-400' : 'text-gray-600'}`}
-            animate={index < lives ? { 
-              filter: ['drop-shadow(0 0 8px rgba(248, 113, 113, 0.8))', 'drop-shadow(0 0 12px rgba(248, 113, 113, 1))', 'drop-shadow(0 0 8px rgba(248, 113, 113, 0.8))']
-            } : {}}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            ❤️
-          </motion.div>
-        ))}
       </div>
     </div>
   );

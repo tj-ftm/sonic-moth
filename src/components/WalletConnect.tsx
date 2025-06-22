@@ -105,30 +105,6 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
     }
   };
 
-  const connectWalletConnect = async () => {
-    try {
-      setIsConnecting(true);
-      setError(null);
-      
-      // For now, we'll simulate WalletConnect
-      // In a real implementation, you'd use @walletconnect/web3-provider
-      setTimeout(async () => {
-        try {
-          // Simulate successful connection
-          onConnect(true);
-          setShowWalletOptions(false);
-        } catch (error: any) {
-          setError('Failed to connect via WalletConnect');
-        } finally {
-          setIsConnecting(false);
-        }
-      }, 2000);
-    } catch (error: any) {
-      setError(error.message || 'Failed to connect via WalletConnect');
-      setIsConnecting(false);
-    }
-  };
-
   const handleConnect = () => {
     setShowWalletOptions(true);
     setError(null);
@@ -172,18 +148,6 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
           >
             <span className="text-2xl">🐰</span>
             <span>Rabby Wallet</span>
-            {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>}
-          </motion.button>
-
-          <motion.button
-            onClick={connectWalletConnect}
-            disabled={isConnecting}
-            className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-blue-500/25 border border-blue-400/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <span className="text-2xl">🔗</span>
-            <span>WalletConnect</span>
             {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>}
           </motion.button>
         </div>
