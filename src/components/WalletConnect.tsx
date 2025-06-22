@@ -93,7 +93,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
       >
         <div className="flex items-center space-x-2">
           <span>🐰</span>
-          <span>{isConnecting ? 'Connecting...' : 'Connect Rabby Wallet'}</span>
+          <span>{isConnecting ? 'Connecting...' : 'Connect'}</span>
           {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>}
         </div>
       </motion.button>
@@ -105,7 +105,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
       )}
       
       <p className="text-orange-300 mt-4 text-sm">
-        Connect your Rabby wallet to access the Sonic Network
+        Connect your wallet to access the Sonic Network
       </p>
     </motion.div>
   );

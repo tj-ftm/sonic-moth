@@ -20,7 +20,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ walletAddress, walletConnecte
     const getRealLeaderboardData = () => {
       const scores = [];
       
-      // Get all stored scores from localStorage
+      // Get all stored scores from localStorage - show ALL scores regardless of wallet connection
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && key.startsWith('mothScore_')) {
@@ -46,7 +46,8 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ walletAddress, walletConnecte
             address: displayName,
             points: score,
             identifier: identifier,
-            isWalletAddress: isWalletAddress
+            isWalletAddress: isWalletAddress,
+            isCurrentUser: false // Will be set later
           });
         }
       }
@@ -90,7 +91,9 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ walletAddress, walletConnecte
             address: currentUserDisplayName,
             points: currentScore,
             identifier: currentUserIdentifier,
-            isWalletAddress: isCurrentWallet
+            isWalletAddress: isCurrentWallet,
+            isCurrentUser: false // Will be set later
+            isCurrentUser: false // Will be set later
           });
         }
       }
@@ -98,13 +101,13 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ walletAddress, walletConnecte
       // If no real scores, add some sample data
       if (scores.length === 0) {
         scores.push(
-          { address: 'Anonymous Player', points: 0, identifier: 'sample1', isWalletAddress: false },
-          { address: 'Moth Master', points: 0, identifier: 'sample2', isWalletAddress: false },
-          { address: 'Light Seeker', points: 0, identifier: 'sample3', isWalletAddress: false }
+          { address: 'Anonymous Player', points: 0, identifier: 'sample1', isWalletAddress: false, isCurrentUser: false },
+          { address: 'Moth Master', points: 0, identifier: 'sample2', isWalletAddress: false, isCurrentUser: false },
+          { address: 'Light Seeker', points: 0, identifier: 'sample3', isWalletAddress: false, isCurrentUser: false }
         );
       }
       
-      // Sort by points and add ranks and badges
+      // Sort by points and add ranks, badges, and mark current user
       const sortedScores = scores
         .sort((a, b) => b.points - a.points)
         .slice(0, 10) // Top 10
@@ -113,9 +116,9 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ walletAddress, walletConnecte
           address: score.address,
           points: score.points,
           badge: index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '',
-          isCurrentUser: walletConnected && walletAddress ? 
-            score.identifier === walletAddress : 
-            score.identifier === 'current'
+          isCurrentUser: (walletConnected && walletAddress && score.identifier === walletAddress) || 
+                        (!walletConnected && score.identifier === 'current'),
+          isWalletScore: score.isWalletAddress // Add this to highlight wallet scores
         }));
       
       return sortedScores;
@@ -165,6 +168,8 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ walletAddress, walletConnecte
                   player.rank <= 3 ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10' : ''
                 } ${
                   player.isCurrentUser ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-l-4 border-blue-400' : ''
+                } ${
+                  player.isWalletScore && !player.isCurrentUser ? 'bg-gradient-to-r from-green-500/10 to-teal-500/10' : ''
                 }`}
               >
                 <div className="text-center">
@@ -185,6 +190,9 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ walletAddress, walletConnecte
                     {player.address}
                     {player.isCurrentUser && (
                       <span className="ml-1 text-blue-300">👤</span>
+                    )}
+                    {player.isWalletScore && !player.isCurrentUser && (
+                      <span className="ml-1 text-green-300">🔗</span>
                     )}
                   </span>
                 </div>
@@ -233,7 +241,9 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ walletAddress, walletConnecte
 
       <div className="mt-6 text-center">
         <p className="text-orange-300 text-sm">
-          Leaderboard updates every 30 seconds. Play Moth To The Lamp to climb the ranks! {walletConnected ? 'Your wallet scores are highlighted!' : 'Connect a wallet to save your high scores!'} 🦋
+          Leaderboard updates every 30 seconds. Play Moth To The Lamp to climb the ranks! 
+          {walletConnected ? ' Your wallet scores are highlighted in blue!' : ' Connect a wallet to save your high scores!'} 
+          Wallet scores are marked with 🔗 🦋
         </p>
       </div>
     </div>

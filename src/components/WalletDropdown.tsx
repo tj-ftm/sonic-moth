@@ -168,10 +168,12 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
 
   const connectRabby = async () => {
     try {
-      if (typeof window.ethereum !== 'undefined') {
+      // Force wallet connection request
+      if (typeof window.ethereum !== 'undefined' && window.ethereum.request) {
         setIsConnecting(true);
         setError(null);
         
+        // Always request accounts to trigger wallet popup
         const accounts = await window.ethereum.request({
           method: 'eth_requestAccounts',
         });
@@ -218,13 +220,36 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
   };
 
   const handleDisconnect = () => {
-    onWalletConnect(false);
-    if (onWalletConnectWithAddress) {
-      onWalletConnectWithAddress(false);
+    try {
+      // Force disconnect by clearing wallet state
+      if (typeof window.ethereum !== 'undefined' && window.ethereum.request) {
+        // Some wallets support wallet_requestPermissions to reset connection
+        window.ethereum.request({
+          method: 'wallet_requestPermissions',
+          params: [{ eth_accounts: {} }]
+        }).catch(() => {
+          // Ignore errors, just proceed with local disconnect
+        });
+      }
+      
+      onWalletConnect(false);
+      if (onWalletConnectWithAddress) {
+        onWalletConnectWithAddress(false);
+      }
+      setWalletAddress('');
+      setCurrentBalances({ sonic: '0.00', moth: '0.00' });
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Disconnect error:', error);
+      // Force local disconnect even if wallet disconnect fails
+      onWalletConnect(false);
+      if (onWalletConnectWithAddress) {
+        onWalletConnectWithAddress(false);
+      }
+      setWalletAddress('');
+      setCurrentBalances({ sonic: '0.00', moth: '0.00' });
+      setIsOpen(false);
     }
-    setWalletAddress('');
-    setCurrentBalances({ sonic: '0.00', moth: '0.00' });
-    setIsOpen(false);
   };
 
   const handleSaveName = () => {
@@ -253,13 +278,13 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
         >
           <div className="flex items-center space-x-2">
             <span>🐰</span>
-            <span>{isConnecting ? 'Connecting...' : 'Connect Rabby'}</span>
+            <span>{isConnecting ? 'Connecting...' : 'Connect'}</span>
             {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>}
           </div>
         </motion.button>
         
         {error && (
-          <div className="absolute top-full mt-2 right-0 bg-red-500/20 border border-red-500/50 rounded-lg p-3 z-50">
+          <div className="absolute top-full mt-2 right-0 bg-red-500/20 border border-red-500/50 rounded-lg p-3 z-50 max-w-xs">
             <p className="text-red-200 text-sm max-w-xs">{error}</p>
           </div>
         )}

@@ -881,7 +881,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                     >
                       <div className="flex items-center justify-center space-x-2">
                         <span>🐰</span>
-                        <span>Connect Wallet & Save</span>
+                        <span>Connect & Save</span>
                       </div>
                     </motion.button>
                     
