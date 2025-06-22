@@ -796,7 +796,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                   setGameState('menu');
                   resetGame();
                 }}
-                className="absolute top-4 right-4 text-orange-300 hover:text-orange-200 text-xl z-10"
+                className="absolute top-4 right-4 text-orange-300 hover:text-orange-200 text-xl z-10 touch-manipulation"
+                style={{ touchAction: 'manipulation' }}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
@@ -813,7 +814,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                       setGameState('menu');
                       resetGame();
                     }}
-                    className={`bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-6 text-base'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30`}
+                    className={`bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-6 text-base'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 touch-manipulation`}
+                    style={{ touchAction: 'manipulation' }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -825,7 +827,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                   
                   <motion.button
                     onClick={startGame}
-                    className={`bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-6 text-base'} rounded-full shadow-lg shadow-green-500/25 border border-green-400/30`}
+                    className={`bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-6 text-base'} rounded-full shadow-lg shadow-green-500/25 border border-green-400/30 touch-manipulation`}
+                    style={{ touchAction: 'manipulation' }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -875,7 +878,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                   <div className="flex flex-col space-y-3">
                     <motion.button
                       onClick={handleConnectWallet}
-                      className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg"
+                      className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg touch-manipulation"
+                      style={{ touchAction: 'manipulation' }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -887,7 +891,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                     
                     <motion.button
                       onClick={handleSaveWithName}
-                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg"
+                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg touch-manipulation"
+                      style={{ touchAction: 'manipulation' }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -896,7 +901,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                     
                     <motion.button
                       onClick={() => setShowWalletPrompt(false)}
-                      className="w-full text-orange-300 hover:text-orange-200 underline text-sm"
+                      className="w-full text-orange-300 hover:text-orange-200 underline text-sm touch-manipulation"
+                      style={{ touchAction: 'manipulation' }}
                       whileHover={{ scale: 1.05 }}
                     >
                       Skip

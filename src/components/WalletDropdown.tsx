@@ -272,7 +272,8 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
         <motion.button
           onClick={handleConnect}
           disabled={isConnecting}
-          className={`${isMobile ? 'w-full' : ''} bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-4 text-sm' : 'py-3 px-6 text-sm'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 ${!isMobile ? 'ml-2' : ''} disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`${isMobile ? 'w-full' : ''} bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-4 text-sm' : 'py-3 px-6 text-sm'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 ${!isMobile ? 'ml-2' : ''} disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation`}
+          style={{ touchAction: 'manipulation' }}
           whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
           whileTap={{ scale: 0.95 }}
         >
@@ -296,7 +297,8 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
     <div className="relative ml-2">
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className={`${isMobile ? 'w-full' : ''} bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-4 text-sm' : 'py-3 px-6 text-sm'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 ${!isMobile ? 'ml-2' : ''}`}
+        className={`${isMobile ? 'w-full' : ''} bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-4 text-sm' : 'py-3 px-6 text-sm'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 ${!isMobile ? 'ml-2' : ''} touch-manipulation`}
+        style={{ touchAction: 'manipulation' }}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
@@ -312,7 +314,8 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className={`absolute right-0 top-full mt-2 ${isMobile ? 'w-72' : 'w-80'} bg-black/90 backdrop-blur-md rounded-xl border border-orange-500/30 shadow-2xl shadow-orange-500/20 z-50`}
+          className={`absolute right-0 top-full mt-2 ${isMobile ? 'w-72' : 'w-80'} bg-black/90 backdrop-blur-md rounded-xl border border-orange-500/30 shadow-2xl shadow-orange-500/20 z-50 touch-manipulation`}
+          style={{ touchAction: 'manipulation' }}
         >
           <div className={`${isMobile ? 'p-4' : 'p-6'} space-y-4`}>
             <div className="border-b border-orange-500/20 pb-4">
@@ -357,7 +360,8 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
                     />
                     <button
                       onClick={handleSaveName}
-                      className={`px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white ${isMobile ? 'text-xs' : 'text-sm'} rounded-lg transition-colors`}
+                      className={`px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white ${isMobile ? 'text-xs' : 'text-sm'} rounded-lg transition-colors touch-manipulation`}
+                      style={{ touchAction: 'manipulation' }}
                     >
                       Save
                     </button>
@@ -367,7 +371,8 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
                     <span className={`text-white ${isMobile ? 'text-xs' : 'text-sm'}`}>{userName || 'Not set'}</span>
                     <button
                       onClick={() => setIsEditingName(true)}
-                      className={`text-orange-400 hover:text-orange-300 ${isMobile ? 'text-xs' : 'text-sm'}`}
+                      className={`text-orange-400 hover:text-orange-300 ${isMobile ? 'text-xs' : 'text-sm'} touch-manipulation`}
+                      style={{ touchAction: 'manipulation' }}
                     >
                       Edit
                     </button>
@@ -379,7 +384,8 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
             <div className="border-t border-orange-500/20 pt-4">
               <motion.button
                 onClick={handleDisconnect}
-                className={`w-full bg-red-600 hover:bg-red-700 text-white font-bold ${isMobile ? 'py-2 text-sm' : 'py-3'} rounded-lg transition-colors`}
+                className={`w-full bg-red-600 hover:bg-red-700 text-white font-bold ${isMobile ? 'py-2 text-sm' : 'py-3'} rounded-lg transition-colors touch-manipulation`}
+                style={{ touchAction: 'manipulation' }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >

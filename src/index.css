@@ -112,3 +112,41 @@
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Improve touch responsiveness on mobile */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* Prevent zoom on double tap for buttons */
+button {
+  touch-action: manipulation;
+}
+
+/* Improve mobile touch targets */
+@media (max-width: 768px) {
+  button, 
+  [role="button"], 
+  .touch-manipulation {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent text selection on touch */
+  * {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Allow text selection for inputs */
+  input, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+}
