@@ -518,8 +518,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
               } else {
                 // Show wallet prompt for non-connected users
                 setShowWalletPrompt(true);
-                onScoreUpdate(state.continuousScore);
-              }
+            width: 90, // Increased by 3x (30 * 3)
+            height: 90, // Increased by 3x (30 * 3)
             }
             return newLives;
           });
