@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import WalletConnect from '../components/WalletConnect';
@@ -13,6 +12,35 @@ const Index = () => {
   const [walletConnected, setWalletConnected] = useState(false);
   const [userPoints, setUserPoints] = useState(0);
   const [balances, setBalances] = useState({ sonic: '0.00', moth: '0.00' });
+
+  // Handle score updates and save to localStorage
+  const handleScoreUpdate = (points: number) => {
+    setUserPoints(points);
+    localStorage.setItem('currentMothScore', points.toString());
+  };
+
+  // Load saved score on component mount
+  useEffect(() => {
+    const savedScore = localStorage.getItem('currentMothScore');
+    if (savedScore) {
+      setUserPoints(parseInt(savedScore));
+    }
+  }, []);
+
+  // Handle navigation from leaderboard button
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === '#leaderboard') {
+        setActiveTab('leaderboard');
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange(); // Check on mount
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-orange-900 relative overflow-hidden">
@@ -38,7 +66,7 @@ const Index = () => {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.5 }}
               >
-                <MothGame onScoreUpdate={setUserPoints} />
+                <MothGame onScoreUpdate={handleScoreUpdate} />
               </motion.div>
             )}
 
@@ -69,7 +97,7 @@ const Index = () => {
                     <p className="text-lg leading-relaxed">
                       Welcome to the $MOTH ecosystem on Sonic Network - where digital moths navigate through 
                       the luminous realm of decentralized gaming. Our platform combines the thrill of 
-                      blockchain technology with engaging gameplay mechanics.
+                      blockchain technology with engaging survival gameplay mechanics.
                     </p>
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="bg-orange-800/20 rounded-xl p-6 border border-orange-400/20">
@@ -82,12 +110,12 @@ const Index = () => {
                         </ul>
                       </div>
                       <div className="bg-red-800/20 rounded-xl p-6 border border-red-400/20">
-                        <h3 className="text-xl font-semibold text-white mb-3">Token Info</h3>
+                        <h3 className="text-xl font-semibold text-white mb-3">Game Info</h3>
                         <ul className="space-y-2 text-sm">
-                          <li><strong>Symbol:</strong> $MOTH</li>
-                          <li><strong>Type:</strong> ERC-20</li>
-                          <li><strong>Contract:</strong> 0x8d5e...da21</li>
-                          <li><strong>Game Points:</strong> Off-chain</li>
+                          <li><strong>Objective:</strong> Survival</li>
+                          <li><strong>Scoring:</strong> Time-based + Bonuses</li>
+                          <li><strong>Penalties:</strong> -50 points per hit</li>
+                          <li><strong>Bonuses:</strong> +10 points per obstacle destroyed</li>
                         </ul>
                       </div>
                     </div>

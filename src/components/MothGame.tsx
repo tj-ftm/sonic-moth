@@ -40,6 +40,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
   const [isShaking, setIsShaking] = useState(false);
   const [hitTint, setHitTint] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const gameStateRef = useRef({
     moth: { x: 100, y: 250, width: 50, height: 35, velocityY: 0 },
@@ -51,7 +52,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     invulnerable: 0,
     continuousScore: 0,
     lastScoreTime: 0,
-    lastProjectileTime: 0
+    lastProjectileTime: 0,
+    gameStartTime: 0
   });
 
   useEffect(() => {
@@ -65,7 +67,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
   }, []);
 
   const resetGame = () => {
-    setLives(3);
+    const newLives = 3;
+    setLives(newLives);
     setScore(0);
     setLevel(1);
     setIsShaking(false);
@@ -94,7 +97,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       invulnerable: 0,
       continuousScore: 0,
       lastScoreTime: 0,
-      lastProjectileTime: 0
+      lastProjectileTime: 0,
+      gameStartTime: Date.now()
     };
   };
 
@@ -258,7 +262,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     ctx.font = `${isMobile ? 12 : 14}px Arial`;
     ctx.fillText('Lives:', 20, heartY - 5);
     
-    // Draw hearts
+    // Draw hearts based on current lives
     for (let i = 0; i < 3; i++) {
       const heartX = 65 + (i * (heartSize + 5));
       
@@ -267,14 +271,15 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
         ctx.shadowBlur = 10;
         ctx.shadowColor = '#EF4444';
         ctx.fillStyle = '#EF4444';
+        ctx.font = `${heartSize}px Arial`;
+        ctx.fillText('❤️', heartX, heartY + 5);
       } else {
-        // Dim heart
+        // Empty heart
         ctx.shadowBlur = 0;
         ctx.fillStyle = '#666666';
+        ctx.font = `${heartSize}px Arial`;
+        ctx.fillText('🖤', heartX, heartY + 5);
       }
-      
-      ctx.font = `${heartSize}px Arial`;
-      ctx.fillText('❤️', heartX, heartY + 5);
     }
     
     // Reset shadow
@@ -303,6 +308,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     
     ctx.restore();
   };
+
   const triggerHitEffect = () => {
     setIsShaking(true);
     setHitTint(true);
@@ -363,7 +369,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       state.lastProjectileTime = currentTime;
     }
     
-    // Continuous scoring
+    // Continuous scoring for survival (1 point every 200ms)
     if (currentTime - state.lastScoreTime > 200) {
       state.continuousScore += 1;
       setScore(state.continuousScore);
@@ -405,7 +411,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
         if (checkCollision(projectile, obstacle)) {
           state.projectiles.splice(pIndex, 1);
           state.obstacles.splice(oIndex, 1);
-          state.continuousScore += 10;
+          state.continuousScore += 10; // Bonus points for destroying obstacles
           setScore(state.continuousScore);
         }
       });
@@ -416,6 +422,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     if (state.invulnerable <= 0) {
       for (const obstacle of state.obstacles) {
         if (checkCollision(state.moth, obstacle)) {
+          // Decrease points when hit
           state.continuousScore = Math.max(0, state.continuousScore - 50);
           setScore(state.continuousScore);
           
@@ -425,6 +432,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
             const newLives = prev - 1;
             if (newLives <= 0) {
               setGameState('gameOver');
+              setFinalScore(state.continuousScore);
               onScoreUpdate(state.continuousScore);
             }
             return newLives;
@@ -439,9 +447,10 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       isHit = state.invulnerable > 60;
     }
     
-    // Level progression
-    if (state.continuousScore > 0 && state.continuousScore % 500 === 0) {
-      setLevel(prev => prev + 1);
+    // Level progression based on survival time
+    const survivalTime = Math.floor((currentTime - state.gameStartTime) / 10000); // Every 10 seconds
+    if (survivalTime + 1 > level) {
+      setLevel(survivalTime + 1);
     }
     
     // Draw everything
@@ -559,20 +568,31 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
   const startGame = () => {
     resetGame();
     setGameState('playing');
+    gameStateRef.current.gameStartTime = Date.now();
   };
 
   return (
     <div className="flex flex-col items-center space-y-6">
-      <motion.h2 
-        className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-center bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent`}
-        animate={{ 
-          filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.7))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
-        }}
-        transition={{ duration: 3, repeat: Infinity }}
-      >
-        Moth to the Light
-      </motion.h2>
-
+      <div className="flex items-center justify-center space-x-4">
+        <motion.h2 
+          className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-center bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent`}
+          animate={{ 
+            filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.7))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
+          }}
+          transition={{ duration: 3, repeat: Infinity }}
+        >
+          Moth Survival
+        </motion.h2>
+        
+        <motion.button
+          onClick={() => window.location.href = '#leaderboard'}
+          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-full text-sm shadow-lg shadow-purple-500/25 border border-purple-400/30"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          🏆 Leaderboard
+        </motion.button>
+      </div>
 
       <div className="relative">
         <motion.canvas
@@ -599,7 +619,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
               >
                 <div className={`${isMobile ? 'text-4xl' : 'text-6xl'} mb-2`}>🦋</div>
                 <div className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-orange-300`}>
-                  Fly to the Light
+                  Survive the Journey
                 </div>
               </motion.div>
               
@@ -631,7 +651,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
                   )}
                 </div>
                 <p className="text-orange-400 text-xs">
-                  Avoid red obstacles and fly toward the sun!
+                  Survive as long as possible! Avoid red obstacles and shoot them for bonus points!
                 </p>
               </div>
             </div>
@@ -642,7 +662,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
           <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm rounded-lg">
             <div className="text-center p-6">
               <h3 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-white mb-4`}>Game Over!</h3>
-              <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-orange-200 mb-4`}>Final Score: {score.toLocaleString()}</p>
+              <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-orange-200 mb-4`}>Final Score: {finalScore.toLocaleString()}</p>
               <motion.button
                 onClick={startGame}
                 className={`bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-6 text-base' : 'py-4 px-8 text-lg'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30`}

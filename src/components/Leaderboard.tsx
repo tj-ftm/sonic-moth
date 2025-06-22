@@ -1,21 +1,90 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 const Leaderboard: React.FC = () => {
-  // Mock leaderboard data
-  const mockLeaderboard = [
-    { rank: 1, address: '0x742d...A4B7', points: 15420, badge: '🥇' },
-    { rank: 2, address: '0x1A3B...C9E2', points: 12850, badge: '🥈' },
-    { rank: 3, address: '0x9F4E...D1A8', points: 11200, badge: '🥉' },
-    { rank: 4, address: '0x5C2F...B8E1', points: 9750, badge: '' },
-    { rank: 5, address: '0x8A1D...F3C4', points: 8900, badge: '' },
-    { rank: 6, address: '0x3E7B...A5D2', points: 7650, badge: '' },
-    { rank: 7, address: '0x6D9C...E4F7', points: 6800, badge: '' },
-    { rank: 8, address: '0x2B5A...C1E9', points: 5950, badge: '' },
-    { rank: 9, address: '0x7F3E...B2D6', points: 5100, badge: '' },
-    { rank: 10, address: '0x4A8C...F5E3', points: 4250, badge: '' },
-  ];
+  const [leaderboardData, setLeaderboardData] = useState<Array<{
+    rank: number;
+    address: string;
+    points: number;
+    badge: string;
+  }>>([]);
+
+  useEffect(() => {
+    // Get real leaderboard data from localStorage
+    const getRealLeaderboardData = () => {
+      const scores = [];
+      
+      // Get all stored scores from localStorage
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('mothScore_')) {
+          const address = key.replace('mothScore_', '');
+          const score = parseInt(localStorage.getItem(key) || '0');
+          const userName = localStorage.getItem(`mothUserName_${address}`) || address;
+          
+          scores.push({
+            address: userName,
+            points: score
+          });
+        }
+      }
+      
+      // Add current user's score if available
+      const currentScore = parseInt(localStorage.getItem('currentMothScore') || '0');
+      const currentUser = localStorage.getItem('mothUserName') || 'Anonymous';
+      
+      if (currentScore > 0) {
+        scores.push({
+          address: currentUser,
+          points: currentScore
+        });
+      }
+      
+      // If no real scores, add some sample data
+      if (scores.length === 0) {
+        scores.push(
+          { address: 'Anonymous Player', points: 0 },
+          { address: 'Moth Master', points: 0 },
+          { address: 'Light Seeker', points: 0 }
+        );
+      }
+      
+      // Sort by points and add ranks and badges
+      const sortedScores = scores
+        .sort((a, b) => b.points - a.points)
+        .slice(0, 10) // Top 10
+        .map((score, index) => ({
+          rank: index + 1,
+          address: score.address,
+          points: score.points,
+          badge: index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : ''
+        }));
+      
+      return sortedScores;
+    };
+    
+    setLeaderboardData(getRealLeaderboardData());
+    
+    // Update leaderboard every 30 seconds
+    const interval = setInterval(() => {
+      setLeaderboardData(getRealLeaderboardData());
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Save score to localStorage when component mounts
+  useEffect(() => {
+    const currentScore = parseInt(localStorage.getItem('currentMothScore') || '0');
+    if (currentScore > 0) {
+      const timestamp = Date.now();
+      const scoreKey = `mothScore_${timestamp}`;
+      localStorage.setItem(scoreKey, currentScore.toString());
+      
+      const userName = localStorage.getItem('mothUserName') || 'Anonymous';
+      localStorage.setItem(`mothUserName_${timestamp}`, userName);
+    }
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -40,71 +109,77 @@ const Leaderboard: React.FC = () => {
         </div>
 
         <div className="divide-y divide-purple-500/20">
-          {mockLeaderboard.map((player, index) => (
-            <motion.div
-              key={player.rank}
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`grid grid-cols-4 gap-4 p-4 hover:bg-purple-800/20 transition-colors ${
-                player.rank <= 3 ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10' : ''
-              }`}
-            >
-              <div className="text-center">
-                <span className={`text-xl font-bold ${
-                  player.rank === 1 ? 'text-yellow-400' :
-                  player.rank === 2 ? 'text-gray-300' :
-                  player.rank === 3 ? 'text-amber-600' :
-                  'text-purple-200'
-                }`}>
-                  #{player.rank}
-                </span>
-              </div>
-              
-              <div className="text-center">
-                <code className="text-purple-200 bg-purple-800/30 px-2 py-1 rounded text-sm">
-                  {player.address}
-                </code>
-              </div>
-              
-              <div className="text-center">
-                <motion.span 
-                  className="text-white font-bold text-lg"
-                  animate={{ 
-                    textShadow: player.rank <= 3 ? [
-                      '0 0 5px rgba(255, 255, 255, 0.5)', 
-                      '0 0 15px rgba(255, 255, 255, 0.8)', 
-                      '0 0 5px rgba(255, 255, 255, 0.5)'
-                    ] : undefined
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  {player.points.toLocaleString()}
-                </motion.span>
-              </div>
-              
-              <div className="text-center">
-                {player.badge && (
+          {leaderboardData.length > 0 ? (
+            leaderboardData.map((player, index) => (
+              <motion.div
+                key={`${player.rank}-${player.address}`}
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className={`grid grid-cols-4 gap-4 p-4 hover:bg-purple-800/20 transition-colors ${
+                  player.rank <= 3 ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10' : ''
+                }`}
+              >
+                <div className="text-center">
+                  <span className={`text-xl font-bold ${
+                    player.rank === 1 ? 'text-yellow-400' :
+                    player.rank === 2 ? 'text-gray-300' :
+                    player.rank === 3 ? 'text-amber-600' :
+                    'text-purple-200'
+                  }`}>
+                    #{player.rank}
+                  </span>
+                </div>
+                
+                <div className="text-center">
+                  <span className="text-purple-200 px-2 py-1 rounded text-sm">
+                    {player.address}
+                  </span>
+                </div>
+                
+                <div className="text-center">
                   <motion.span 
-                    className="text-2xl"
+                    className="text-white font-bold text-lg"
                     animate={{ 
-                      scale: [1, 1.1, 1],
-                      rotate: [0, 5, -5, 0]
+                      textShadow: player.rank <= 3 ? [
+                        '0 0 5px rgba(255, 255, 255, 0.5)', 
+                        '0 0 15px rgba(255, 255, 255, 0.8)', 
+                        '0 0 5px rgba(255, 255, 255, 0.5)'
+                      ] : undefined
                     }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
-                    {player.badge}
+                    {player.points.toLocaleString()}
                   </motion.span>
-                )}
-              </div>
-            </motion.div>
-          ))}
+                </div>
+                
+                <div className="text-center">
+                  {player.badge && (
+                    <motion.span 
+                      className="text-2xl"
+                      animate={{ 
+                        scale: [1, 1.1, 1],
+                        rotate: [0, 5, -5, 0]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      {player.badge}
+                    </motion.span>
+                  )}
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            <div className="p-8 text-center">
+              <p className="text-purple-300">No scores yet. Be the first to play!</p>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="mt-8 text-center">
         <p className="text-purple-300 text-sm">
-          Leaderboard updates every 30 seconds. Play the moth game to climb the ranks! 🦋
+          Leaderboard updates every 30 seconds. Play the moth survival game to climb the ranks! 🦋
         </p>
       </div>
     </div>
