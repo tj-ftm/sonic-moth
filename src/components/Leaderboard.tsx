@@ -99,7 +99,7 @@ const Leaderboard: React.FC = () => {
       </motion.h2>
 
       <div className="bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-2xl border border-purple-500/30 overflow-hidden">
-        <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-4 border-b border-purple-500/30">
+        <div className="bg-gradient-to-r from-orange-600/20 to-red-600/20 p-4 border-b border-orange-500/30">
           <div className="grid grid-cols-4 gap-2 text-white font-semibold text-sm">
             <div className="text-center">Rank</div>
             <div className="text-center">Player</div>
@@ -108,7 +108,7 @@ const Leaderboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="divide-y divide-purple-500/20 max-h-60 overflow-y-auto scrollbar-hide">
+        <div className="divide-y divide-orange-500/20 max-h-60 overflow-y-auto scrollbar-hide">
           {leaderboardData.length > 0 ? (
             leaderboardData.map((player, index) => (
               <motion.div
@@ -116,7 +116,7 @@ const Leaderboard: React.FC = () => {
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={`grid grid-cols-4 gap-2 p-3 hover:bg-purple-800/20 transition-colors ${
+                className={`grid grid-cols-4 gap-2 p-3 hover:bg-orange-800/20 transition-colors ${
                   player.rank <= 3 ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10' : ''
                 }`}
               >
@@ -125,14 +125,14 @@ const Leaderboard: React.FC = () => {
                     player.rank === 1 ? 'text-yellow-400' :
                     player.rank === 2 ? 'text-gray-300' :
                     player.rank === 3 ? 'text-amber-600' :
-                    'text-purple-200'
+                    'text-orange-200'
                   }`}>
                     #{player.rank}
                   </span>
                 </div>
                 
                 <div className="text-center">
-                  <span className="text-purple-200 px-1 py-1 rounded text-xs">
+                  <span className="text-orange-200 px-1 py-1 rounded text-xs">
                     {player.address}
                   </span>
                 </div>
@@ -171,14 +171,14 @@ const Leaderboard: React.FC = () => {
             ))
           ) : (
             <div className="p-6 text-center">
-              <p className="text-purple-300">No scores yet. Be the first to play!</p>
+              <p className="text-orange-300">No scores yet. Be the first to play!</p>
             </div>
           )}
         </div>
       </div>
 
       <div className="mt-6 text-center">
-        <p className="text-purple-300 text-sm">
+        <p className="text-orange-300 text-sm">
           Leaderboard updates every 30 seconds. Play the moth survival game to climb the ranks! 🦋
         </p>
       </div>

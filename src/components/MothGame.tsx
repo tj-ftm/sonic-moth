@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import Leaderboard from './Leaderboard';
 
 interface MothGameProps {
   onScoreUpdate: (points: number) => void;
@@ -688,20 +689,45 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
         
         {gameState === 'gameOver' && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm rounded-lg">
-            <div className="text-center p-6">
-              <h3 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-white mb-4`}>Game Over!</h3>
-              <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-orange-200 mb-4`}>Final Score: {finalScore.toLocaleString()}</p>
-              <motion.button
-                onClick={startGame}
-                className={`bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-6 text-base' : 'py-4 px-8 text-lg'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <div className="flex items-center space-x-2">
-                  <span>🦋</span>
-                  <span>Play Again</span>
+            <div className={`bg-gradient-to-br from-black via-gray-900 to-orange-900 rounded-2xl border border-orange-500/30 p-6 ${isMobile ? 'w-full max-w-sm mx-4' : 'max-w-2xl w-full'} max-h-[80vh] overflow-y-auto scrollbar-hide`}>
+              <div className="text-center mb-6">
+                <h3 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-white mb-4`}>Game Over!</h3>
+                <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-orange-200 mb-6`}>Final Score: {finalScore.toLocaleString()}</p>
+                
+                <div className="flex justify-center space-x-4 mb-6">
+                  <motion.button
+                    onClick={() => {
+                      setGameState('menu');
+                      resetGame();
+                    }}
+                    className={`bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-6 text-base'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span>🦋</span>
+                      <span>Play Again</span>
+                    </div>
+                  </motion.button>
+                  
+                  <motion.button
+                    onClick={startGame}
+                    className={`bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-6 text-base'} rounded-full shadow-lg shadow-green-500/25 border border-green-400/30`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span>🚀</span>
+                      <span>Quick Restart</span>
+                    </div>
+                  </motion.button>
                 </div>
-              </motion.button>
+              </div>
+              
+              {/* Embedded Leaderboard */}
+              <div className="border-t border-orange-500/30 pt-6">
+                <Leaderboard />
+              </div>
             </div>
           </div>
         )}
