@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import WalletDropdown from './WalletDropdown';
 
@@ -20,6 +20,18 @@ const Navigation: React.FC<NavigationProps> = ({
   userPoints, 
   onWalletConnect 
 }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const tabs = [
     { id: 'home', label: 'Home', icon: '🦋' },
     { id: 'leaderboard', label: 'Leaderboard', icon: '🏆' },
@@ -27,16 +39,16 @@ const Navigation: React.FC<NavigationProps> = ({
   ];
 
   return (
-    <nav className="relative z-20 p-6">
+    <nav className={`relative z-20 ${isMobile ? 'p-2' : 'p-6'}`}>
       <div className="container mx-auto">
         <div className="flex justify-center items-center">
-          <div className="bg-black/20 backdrop-blur-md rounded-full p-2 border border-orange-500/30">
-            <div className="flex space-x-2 items-center">
+          <div className={`bg-black/20 backdrop-blur-md rounded-full ${isMobile ? 'p-1' : 'p-2'} border border-orange-500/30`}>
+            <div className={`flex ${isMobile ? 'space-x-1' : 'space-x-2'} items-center`}>
               {tabs.map((tab) => (
                 <motion.button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 ${
+                  className={`${isMobile ? 'px-3 py-2 text-xs' : 'px-6 py-3 text-sm'} rounded-full font-medium transition-all duration-300 ${
                     activeTab === tab.id
                       ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25'
                       : 'text-orange-200 hover:text-white hover:bg-orange-800/30'
@@ -44,8 +56,8 @@ const Navigation: React.FC<NavigationProps> = ({
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <span className="mr-2">{tab.icon}</span>
-                  {tab.label}
+                  <span className={isMobile ? 'mr-1' : 'mr-2'}>{tab.icon}</span>
+                  {isMobile ? (tab.id === 'home' ? 'Home' : tab.id === 'leaderboard' ? 'Board' : 'Info') : tab.label}
                 </motion.button>
               ))}
               

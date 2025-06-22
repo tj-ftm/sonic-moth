@@ -561,7 +561,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
         <motion.canvas
           ref={canvasRef}
           width={isMobile ? 350 : 800}
-          height={isMobile ? 250 : 500}
+          height={isMobile ? 450 : 500}
           className={`border border-orange-500/30 rounded-lg shadow-2xl shadow-orange-500/20 ${isMobile ? 'w-full max-w-sm' : ''}`}
           animate={isShaking ? { 
             x: [0, -5, 5, -5, 5, 0],
