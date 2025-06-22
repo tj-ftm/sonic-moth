@@ -248,7 +248,7 @@ const Index = () => {
                             </motion.a>
                             
                             <motion.a
-                              href="https://t.me/moth_token"
+                              href="https://t.me/mothvslamp"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30"
