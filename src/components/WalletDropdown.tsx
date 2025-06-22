@@ -6,13 +6,15 @@ interface WalletDropdownProps {
   balances: { sonic: string; moth: string };
   userPoints: number;
   onWalletConnect: (connected: boolean) => void;
+  onBalanceUpdate?: (balances: { sonic: string; moth: string }) => void;
 }
 
 const WalletDropdown: React.FC<WalletDropdownProps> = ({
   walletConnected,
   balances,
   userPoints,
-  onWalletConnect
+  onWalletConnect,
+  onBalanceUpdate
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -21,6 +23,7 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [currentBalances, setCurrentBalances] = useState({ sonic: '0.00', moth: '0.00' });
 
   const SONIC_NETWORK = {
     chainId: '0x92', // 146 in hex
@@ -34,8 +37,8 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
     blockExplorerUrls: ['https://sonicscan.org'],
   };
 
-  // Mock balance update function - replace with actual Web3 integration
-  const [mockBalances, setMockBalances] = useState({ sonic: '0.00', moth: '0.00' });
+  const MOTH_CONTRACT_ADDRESS = '0xD259C1ae13e4AcD745556913D044f08542418875';
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -53,29 +56,75 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
         .then((accounts: string[]) => {
           if (accounts.length > 0) {
             setWalletAddress(accounts[0]);
-            // Simulate balance updates - replace with actual Web3 calls
-            updateBalances();
+            updateBalances(accounts[0]);
           }
         });
     }
   }, [walletConnected]);
 
-  const updateBalances = async () => {
+  const updateBalances = async (address: string) => {
     try {
-      // Simulate fetching real balances - replace with actual Web3 integration
-      setTimeout(() => {
-        const newBalances = {
-          sonic: (Math.random() * 10).toFixed(2),
-          moth: (Math.random() * 1000).toFixed(0)
-        };
-        setMockBalances(newBalances);
-        // Update parent component balances
-        if (typeof onWalletConnect === 'function') {
-          // This would need to be passed as a callback to update parent state
-          }
-      }, 1000);
+      if (!window.ethereum || !address) return;
+
+      // Get Sonic (native token) balance
+      const sonicBalance = await window.ethereum.request({
+        method: 'eth_getBalance',
+        params: [address, 'latest']
+      });
+
+      // Convert from wei to ether
+      const sonicBalanceInEther = parseInt(sonicBalance, 16) / Math.pow(10, 18);
+
+      // Get MOTH token balance using ERC-20 balanceOf method
+      const mothBalance = await getMothTokenBalance(address);
+
+      const newBalances = {
+        sonic: sonicBalanceInEther.toFixed(4),
+        moth: mothBalance
+      };
+
+      setCurrentBalances(newBalances);
+      
+      // Update parent component balances
+      if (onBalanceUpdate) {
+        onBalanceUpdate(newBalances);
+      }
     } catch (error) {
       console.error('Error updating balances:', error);
+      // Fallback to showing 0 balances on error
+      const fallbackBalances = { sonic: '0.00', moth: '0.00' };
+      setCurrentBalances(fallbackBalances);
+      if (onBalanceUpdate) {
+        onBalanceUpdate(fallbackBalances);
+      }
+    }
+  };
+
+  const getMothTokenBalance = async (address: string): Promise<string> => {
+    try {
+      // ERC-20 balanceOf function signature
+      const balanceOfSignature = '0x70a08231';
+      const paddedAddress = address.slice(2).padStart(64, '0');
+      const data = balanceOfSignature + paddedAddress;
+
+      const result = await window.ethereum.request({
+        method: 'eth_call',
+        params: [{
+          to: MOTH_CONTRACT_ADDRESS,
+          data: data
+        }, 'latest']
+      });
+
+      // Convert hex result to decimal
+      const balanceInWei = parseInt(result, 16);
+      
+      // Assuming MOTH token has 18 decimals (standard for most tokens)
+      const balanceInTokens = balanceInWei / Math.pow(10, 18);
+      
+      return balanceInTokens.toFixed(2);
+    } catch (error) {
+      console.error('Error fetching MOTH balance:', error);
+      return '0.00';
     }
   };
 
@@ -123,7 +172,7 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
         if (accounts.length > 0) {
           await checkAndSwitchNetwork(window.ethereum);
           setWalletAddress(accounts[0]);
-          updateBalances();
+          await updateBalances(accounts[0]);
           onWalletConnect(true);
         }
       } else {
@@ -143,6 +192,7 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
   const handleDisconnect = () => {
     onWalletConnect(false);
     setWalletAddress('');
+    setCurrentBalances({ sonic: '0.00', moth: '0.00' });
     setIsOpen(false);
   };
 
@@ -214,14 +264,14 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
               <div className="bg-orange-800/20 rounded-lg p-3 border border-orange-400/20">
                 <div className="flex justify-between items-center">
                   <span className={`text-orange-200 ${isMobile ? 'text-xs' : 'text-sm'}`}>Sonic ($S)</span>
-                  <span className={`text-white font-semibold ${isMobile ? 'text-sm' : ''}`}>{mockBalances.sonic}</span>
+                  <span className={`text-white font-semibold ${isMobile ? 'text-sm' : ''}`}>{currentBalances.sonic}</span>
                 </div>
               </div>
               
               <div className="bg-red-800/20 rounded-lg p-3 border border-red-400/20">
                 <div className="flex justify-between items-center">
                   <span className={`text-orange-200 ${isMobile ? 'text-xs' : 'text-sm'}`}>MOTH Token</span>
-                  <span className={`text-white font-semibold ${isMobile ? 'text-sm' : ''}`}>{mockBalances.moth}</span>
+                  <span className={`text-white font-semibold ${isMobile ? 'text-sm' : ''}`}>{currentBalances.moth}</span>
                 </div>
               </div>
               

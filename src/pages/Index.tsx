@@ -21,6 +21,11 @@ const Index = () => {
     localStorage.setItem('currentMothScore', points.toString());
   };
 
+  // Handle balance updates from wallet
+  const handleBalanceUpdate = (newBalances: { sonic: string; moth: string }) => {
+    setBalances(newBalances);
+  };
+
   // Load saved score on component mount
   useEffect(() => {
     const savedScore = localStorage.getItem('currentMothScore');
@@ -58,6 +63,7 @@ const Index = () => {
           onWalletConnect={setWalletConnected}
           onShowLeaderboard={activeTab === 'home' ? () => setShowLeaderboard(true) : undefined}
           onShowAbout={activeTab === 'home' ? () => setShowAbout(true) : undefined}
+          onBalanceUpdate={handleBalanceUpdate}
         />
         
         <div className="container mx-auto px-4 py-8">
