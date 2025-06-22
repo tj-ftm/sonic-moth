@@ -49,7 +49,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
   const [currentScore, setCurrentScore] = useState(0);
 
   const gameStateRef = useRef({
-    moth: { x: 50, y: 250, width: 50, height: 35, velocityY: 0 },
+    moth: { x: 100, y: 250, width: 50, height: 35, velocityY: 0 },
     obstacles: [] as Obstacle[],
     projectiles: [] as Projectile[],
     backgroundMoths: [] as BackgroundMoth[],
@@ -130,7 +130,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
     }
     
     gameStateRef.current = {
-      moth: { x: 50, y: 250, width: 50, height: 35, velocityY: 0 },
+      moth: { x: 100, y: 250, width: 50, height: 35, velocityY: 0 },
       obstacles: [],
       projectiles: [],
       backgroundMoths,
@@ -271,13 +271,13 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
     
     // Draw lamp image if loaded, otherwise fallback to circle
     if (drawLampImage.complete && drawLampImage.naturalHeight !== 0) {
-      const size = obstacle.width * 0.9; // Use most of the obstacle size
+      const size = obstacle.width * 0.8; // Make lamp smaller
       ctx.drawImage(drawLampImage, -size/2, -size/2, size, size);
     } else {
       // Fallback: golden glowing circle
       ctx.fillStyle = '#FFD700';
       ctx.beginPath();
-      ctx.arc(0, 0, obstacle.width * 0.4, 0, Math.PI * 2);
+      ctx.arc(0, 0, obstacle.width * 0.3, 0, Math.PI * 2);
       ctx.fill();
     }
     
@@ -518,8 +518,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
               } else {
                 // Show wallet prompt for non-connected users
                 setShowWalletPrompt(true);
-            width: 90, // Increased by 3x (30 * 3)
-            height: 90, // Increased by 3x (30 * 3)
+                onScoreUpdate(state.continuousScore);
+              }
             }
             return newLives;
           });
