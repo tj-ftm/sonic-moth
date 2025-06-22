@@ -420,20 +420,8 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
                       type="text"
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
-                      className={`flex-1 px-3 py-2 bg-black/50 border border-orange-500/30 rounded-lg text-white ${isMobile ? 'text-xs' : 'text-sm'} focus:outline-none focus:border-orange-500 selectable touch-manipulation`}
-                      style={{
-                        WebkitUserSelect: 'text',
-                        MozUserSelect: 'text',
-                        msUserSelect: 'text',
-                        userSelect: 'text',
-                        WebkitTouchCallout: 'default',
-                        touchAction: 'manipulation'
-                      }}
+                      className={`flex-1 px-3 py-2 bg-black/50 border border-orange-500/30 rounded-lg text-white ${isMobile ? 'text-xs' : 'text-sm'} focus:outline-none focus:border-orange-500 selectable`}
                       placeholder="Enter display name"
-                      autoComplete="off"
-                      autoCorrect="off"
-                      autoCapitalize="off"
-                      spellCheck="false"
                     />
                     <button
                       onClick={handleSaveName}
