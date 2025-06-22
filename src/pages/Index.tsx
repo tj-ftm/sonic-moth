@@ -100,12 +100,12 @@ const Index = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.5 }}
-                className="relative"
+                className={`relative ${window.innerWidth < 768 ? 'mobile-game-container' : ''}`}
               >
                 {/* Only show title on desktop, mobile has it in navigation */}
                 <div className="hidden md:block">
                   <motion.h2 
-                    className="text-4xl font-bold text-center bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent mb-6"
+                    className="responsive-text-3xl md:text-4xl font-bold text-center bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent mb-6"
                     animate={{ 
                       filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.7))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
                     }}
@@ -129,30 +129,25 @@ const Index = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                      className="mobile-modal z-50"
                       onClick={() => setShowLeaderboard(false)}
                     >
                       <motion.div
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
-                        className="bg-gradient-to-br from-black via-gray-900 to-orange-900 rounded-2xl border border-orange-500/30 p-6 max-w-2xl w-full max-h-[70vh] overflow-y-auto scrollbar-hide"
+                        className="mobile-modal-content max-w-2xl w-full max-h-[70vh] overflow-y-auto scrollbar-hide"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex justify-between items-center mb-6">
-                          <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
+                          <h2 className="responsive-text-xl md:text-2xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
                             🏆 Leaderboard
                           </h2>
                           <motion.button
                             onClick={() => setShowLeaderboard(false)}
-                            className="text-orange-300 hover:text-orange-200 text-2xl"
+                            className="multi-touch touch-feedback text-orange-300 hover:text-orange-200 text-2xl"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            onTouchStart={(e) => e.stopPropagation()}
-                            onTouchEnd={(e) => {
-                              e.stopPropagation();
-                              setShowLeaderboard(false);
-                            }}
                           >
                             ✕
                           </motion.button>
@@ -170,28 +165,23 @@ const Index = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                      className="mobile-modal z-50"
                       onClick={() => setShowAbout(false)}
                     >
                       <motion.div
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
-                        className="bg-gradient-to-br from-black via-gray-900 to-orange-900 rounded-2xl border border-orange-500/30 p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto scrollbar-hide"
+                        className="mobile-modal-content max-w-4xl w-full max-h-[80vh] overflow-y-auto scrollbar-hide"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex justify-between items-center mb-6">
-                          <h2 className="text-3xl font-bold text-white">About $MOTH</h2>
+                          <h2 className="responsive-text-2xl md:text-3xl font-bold text-white">About $MOTH</h2>
                           <motion.button
                             onClick={() => setShowAbout(false)}
-                            className="text-orange-300 hover:text-orange-200 text-2xl"
+                            className="multi-touch touch-feedback text-orange-300 hover:text-orange-200 text-2xl"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            onTouchStart={(e) => e.stopPropagation()}
-                            onTouchEnd={(e) => {
-                              e.stopPropagation();
-                              setShowAbout(false);
-                            }}
                           >
                             ✕
                           </motion.button>
@@ -203,9 +193,9 @@ const Index = () => {
                             luminous realm of decentralized gaming on Sonic Network. Navigate through dangerous 
                             obstacles as you're pulled toward the eternal light.
                           </p>
-                          <div className="grid md:grid-cols-2 gap-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="bg-orange-800/20 rounded-xl p-6 border border-orange-400/20">
-                              <h3 className="text-xl font-semibold text-white mb-3">Network Details</h3>
+                              <h3 className="responsive-text-lg md:text-xl font-semibold text-white mb-3">Network Details</h3>
                               <ul className="space-y-2 text-sm">
                                 <li><strong>Network:</strong> Sonic</li>
                                 <li><strong>Chain ID:</strong> 146</li>
@@ -214,7 +204,7 @@ const Index = () => {
                               </ul>
                             </div>
                             <div className="bg-red-800/20 rounded-xl p-6 border border-red-400/20">
-                              <h3 className="text-xl font-semibold text-white mb-3">Game Info</h3>
+                              <h3 className="responsive-text-lg md:text-xl font-semibold text-white mb-3">Game Info</h3>
                               <ul className="space-y-2 text-sm">
                                 <li><strong>Objective:</strong> Reach the lamp</li>
                                 <li><strong>Scoring:</strong> Time-based + Bonuses</li>
@@ -224,19 +214,14 @@ const Index = () => {
                             </div>
                           </div>
                           
-                          <div className="flex justify-center space-x-6 mt-8">
+                          <div className="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-6 mt-8">
                             <motion.a
                               href="https://twitter.com/moth_token"
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30"
+                              className="multi-touch touch-feedback bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 text-center"
                               whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
                               whileTap={{ scale: 0.95 }}
-                              onTouchStart={(e) => e.stopPropagation()}
-                              onTouchEnd={(e) => {
-                                e.stopPropagation();
-                                window.open('https://twitter.com/moth_token', '_blank');
-                              }}
                             >
                               𝕏 Twitter
                             </motion.a>
@@ -245,14 +230,9 @@ const Index = () => {
                               href="https://dexscreener.com/sonic/moth"
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30"
+                              className="multi-touch touch-feedback bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 text-center"
                               whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
                               whileTap={{ scale: 0.95 }}
-                              onTouchStart={(e) => e.stopPropagation()}
-                              onTouchEnd={(e) => {
-                                e.stopPropagation();
-                                window.open('https://dexscreener.com/sonic/moth', '_blank');
-                              }}
                             >
                               📊 DexScreener
                             </motion.a>
@@ -261,14 +241,9 @@ const Index = () => {
                               href="https://t.me/moth_token"
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30"
+                              className="multi-touch touch-feedback bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 text-center"
                               whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
                               whileTap={{ scale: 0.95 }}
-                              onTouchStart={(e) => e.stopPropagation()}
-                              onTouchEnd={(e) => {
-                                e.stopPropagation();
-                                window.open('https://t.me/moth_token', '_blank');
-                              }}
                             >
                               📱 Telegram
                             </motion.a>
