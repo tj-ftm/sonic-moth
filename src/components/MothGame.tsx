@@ -234,6 +234,75 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     ctx.restore();
   };
 
+  const drawUI = (ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) => {
+    if (gameState !== 'playing') return;
+    
+    ctx.save();
+    
+    // Draw semi-transparent background for UI
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(10, 10, canvasWidth - 20, isMobile ? 50 : 60);
+    ctx.strokeStyle = 'rgba(249, 115, 22, 0.3)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(10, 10, canvasWidth - 20, isMobile ? 50 : 60);
+    
+    // Draw lives (hearts)
+    const heartSize = isMobile ? 16 : 20;
+    const heartY = isMobile ? 25 : 30;
+    
+    ctx.font = `${heartSize}px Arial`;
+    ctx.textAlign = 'left';
+    
+    // Lives label
+    ctx.fillStyle = '#FB923C';
+    ctx.font = `${isMobile ? 12 : 14}px Arial`;
+    ctx.fillText('Lives:', 20, heartY - 5);
+    
+    // Draw hearts
+    for (let i = 0; i < 3; i++) {
+      const heartX = 65 + (i * (heartSize + 5));
+      
+      if (i < lives) {
+        // Glowing heart
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#EF4444';
+        ctx.fillStyle = '#EF4444';
+      } else {
+        // Dim heart
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#666666';
+      }
+      
+      ctx.font = `${heartSize}px Arial`;
+      ctx.fillText('❤️', heartX, heartY + 5);
+    }
+    
+    // Reset shadow
+    ctx.shadowBlur = 0;
+    
+    // Draw score and level on the right side
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#FB923C';
+    ctx.font = `${isMobile ? 12 : 14}px Arial`;
+    
+    const rightX = canvasWidth - 20;
+    
+    // Score
+    ctx.fillText('Score:', rightX - 60, heartY - 5);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `bold ${isMobile ? 14 : 16}px Arial`;
+    ctx.fillText(score.toLocaleString(), rightX, heartY - 5);
+    
+    // Level
+    ctx.fillStyle = '#FB923C';
+    ctx.font = `${isMobile ? 12 : 14}px Arial`;
+    ctx.fillText('Level:', rightX - 60, heartY + 15);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `bold ${isMobile ? 14 : 16}px Arial`;
+    ctx.fillText(level.toString(), rightX, heartY + 15);
+    
+    ctx.restore();
+  };
   const triggerHitEffect = () => {
     setIsShaking(true);
     setHitTint(true);
@@ -386,6 +455,9 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       drawProjectile(ctx, projectile);
     });
     
+    // Draw UI elements inside canvas
+    drawUI(ctx, canvas.width, canvas.height);
+    
     gameLoopRef.current = requestAnimationFrame(gameLoop);
   }, [gameState, lives, level, onScoreUpdate, hitTint]);
 
@@ -501,39 +573,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
         Moth to the Light
       </motion.h2>
 
-      {/* Lives and Score Panel */}
-      <div className={`bg-black/40 backdrop-blur-sm rounded-xl border border-orange-500/30 p-4 ${isMobile ? 'w-full max-w-sm' : 'w-auto'}`}>
-        <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center space-x-8'}`}>
-          <div className="flex items-center space-x-2">
-            <span className="text-orange-200 text-sm font-medium">Lives:</span>
-            <div className="flex space-x-1">
-              {[...Array(3)].map((_, index) => (
-                <motion.div
-                  key={index}
-                  className={`${isMobile ? 'text-xl' : 'text-2xl'} ${index < lives ? 'text-red-400' : 'text-gray-600'}`}
-                  animate={index < lives ? { 
-                    filter: ['drop-shadow(0 0 8px rgba(248, 113, 113, 0.8))', 'drop-shadow(0 0 12px rgba(248, 113, 113, 1))', 'drop-shadow(0 0 8px rgba(248, 113, 113, 0.8))']
-                  } : {}}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  ❤️
-                </motion.div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <div className="text-center">
-              <span className="text-orange-200 text-sm">Score</span>
-              <div className="text-white font-bold text-lg">{score.toLocaleString()}</div>
-            </div>
-            <div className="text-center">
-              <span className="text-orange-200 text-sm">Level</span>
-              <div className="text-white font-bold text-lg">{level}</div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div className="relative">
         <motion.canvas
