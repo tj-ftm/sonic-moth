@@ -199,7 +199,7 @@ const Index = () => {
                         
                         <div className="space-y-6 text-orange-200">
                           <p className="text-lg leading-relaxed">
-                            Welcome to Moth To The Lamp - where digital moths are irresistibly drawn to the 
+                            Welcome to Moth VS Lamp - where digital moths are irresistibly drawn to the 
                             luminous realm of decentralized gaming on Sonic Network. Navigate through dangerous 
                             obstacles as you're pulled toward the eternal light.
                           </p>
