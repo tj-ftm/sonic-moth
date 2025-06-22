@@ -254,24 +254,24 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
   };
 
   const drawLampImage = new Image();
-  drawLampImage.src = '/src/assets/—Pngtree—vector lamp icon_4091194.png';
+  drawLampImage.src = '/—Pngtree—vector lamp icon_4091194.svg';
 
   const drawObstacle = (ctx: CanvasRenderingContext2D, obstacle: Obstacle, time: number) => {
     ctx.save();
     
-    // Draw lamp with glow effect
+    // Draw rotating lamp with glow effect
     const rotation = time * 0.005;
     ctx.translate(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2);
     ctx.rotate(rotation);
     
     // Add glow effect
-    ctx.shadowBlur = 30;
+    ctx.shadowBlur = 20;
     ctx.shadowColor = '#FFD700';
-    ctx.globalAlpha = 0.8;
+    ctx.globalAlpha = 0.9;
     
     // Draw lamp image if loaded, otherwise fallback to circle
     if (drawLampImage.complete && drawLampImage.naturalHeight !== 0) {
-      const size = obstacle.width * 0.8; // Make lamp smaller
+      const size = obstacle.width * 1.2; // Scale to fit obstacle size
       ctx.drawImage(drawLampImage, -size/2, -size/2, size, size);
     } else {
       // Fallback: golden glowing circle
@@ -458,8 +458,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
         state.obstacles.push({
           x: canvas.width + i * 120,
           y: Math.random() * (canvas.height - 100) + 50,
-          width: 30, // Made smaller
-          height: 30, // Made smaller
+          width: 28, // 20% smaller than moth (moth is ~35px)
+          height: 28, // 20% smaller than moth
           speedX: -4,
           type: 'wind'
         });
