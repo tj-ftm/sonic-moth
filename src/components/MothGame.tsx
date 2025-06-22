@@ -41,6 +41,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
   const [hitTint, setHitTint] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const gameStateRef = useRef({
     moth: { x: 100, y: 250, width: 50, height: 35, velocityY: 0 },
@@ -53,7 +54,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     continuousScore: 0,
     lastScoreTime: 0,
     lastProjectileTime: 0,
-    gameStartTime: 0
+    gameStartTime: 0,
+    lampSize: 100
   });
 
   useEffect(() => {
@@ -70,7 +72,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     const newLives = 3;
     setLives(newLives);
     setScore(0);
-    setLevel(1);
     setIsShaking(false);
     setHitTint(false);
     
@@ -98,7 +99,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       continuousScore: 0,
       lastScoreTime: 0,
       lastProjectileTime: 0,
-      gameStartTime: Date.now()
+      gameStartTime: Date.now(),
+      lampSize: 100
     };
   };
 
@@ -167,30 +169,33 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     ctx.restore();
   };
 
-  const drawSunGlow = (ctx: CanvasRenderingContext2D, time: number) => {
+  const drawSunGlow = (ctx: CanvasRenderingContext2D, time: number, lampSize: number) => {
     ctx.save();
     
     const glowIntensity = 30 + Math.sin(time * 0.003) * 10;
+    const size = lampSize + Math.sin(time * 0.002) * 10; // Pulsing effect
     
     // Create radial gradient for sun effect
-    const gradient = ctx.createRadialGradient(800, 250, 0, 800, 250, 200);
+    const centerX = canvas.width - 100;
+    const centerY = canvas.height / 2;
+    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, size);
     gradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
     gradient.addColorStop(0.3, 'rgba(255, 165, 0, 0.6)');
     gradient.addColorStop(0.6, 'rgba(255, 69, 0, 0.4)');
     gradient.addColorStop(1, 'rgba(255, 69, 0, 0)');
     
     ctx.fillStyle = gradient;
-    ctx.fillRect(600, 50, 400, 400);
+    ctx.fillRect(centerX - size, centerY - size, size * 2, size * 2);
     
     // Add sun rays
     ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
     ctx.lineWidth = 2;
     for (let i = 0; i < 12; i++) {
       const angle = (i * Math.PI * 2) / 12 + time * 0.001;
-      const x1 = 800 + Math.cos(angle) * 100;
-      const y1 = 250 + Math.sin(angle) * 100;
-      const x2 = 800 + Math.cos(angle) * 150;
-      const y2 = 250 + Math.sin(angle) * 150;
+      const x1 = centerX + Math.cos(angle) * (size * 0.6);
+      const y1 = centerY + Math.sin(angle) * (size * 0.6);
+      const x2 = centerX + Math.cos(angle) * (size * 0.8);
+      const y2 = centerY + Math.sin(angle) * (size * 0.8);
       
       ctx.beginPath();
       ctx.moveTo(x1, y1);
@@ -323,14 +328,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const state = gameStateRef.current;
-    
-    // Clear canvas
-    ctx.fillStyle = hitTint ? 'rgba(255, 0, 0, 0.3)' : '#000000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
     // Draw sun glow on the right side
-    drawSunGlow(ctx, currentTime);
+    drawSunGlow(ctx, currentTime, state.lampSize);
     
     if (gameState === 'menu') {
       // Update and draw background moths
@@ -374,10 +373,13 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       state.continuousScore += 1;
       setScore(state.continuousScore);
       state.lastScoreTime = currentTime;
+      
+      // Increase lamp size based on score (every 100 points increases size by 10)
+      state.lampSize = 100 + Math.floor(state.continuousScore / 100) * 10;
     }
     
     // Spawn obstacles (only red glowing rotating wind)
-    if (currentTime - state.lastObstacleSpawn > Math.max(1500 - (level * 100), 800)) {
+    if (currentTime - state.lastObstacleSpawn > Math.max(1500 - Math.floor(state.continuousScore / 200) * 100, 800)) {
       const numObstacles = Math.random() < 0.3 ? 2 : 1;
       
       for (let i = 0; i < numObstacles; i++) {
@@ -386,7 +388,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
           y: Math.random() * (canvas.height - 100) + 50,
           width: 60,
           height: 60,
-          speedX: -4 - (level * 0.5),
+          speedX: -4 - Math.floor(state.continuousScore / 500) * 0.5,
           type: 'wind'
         });
       }
@@ -468,7 +470,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     drawUI(ctx, canvas.width, canvas.height);
     
     gameLoopRef.current = requestAnimationFrame(gameLoop);
-  }, [gameState, lives, level, onScoreUpdate, hitTint]);
+  }, [gameState, lives, onScoreUpdate, hitTint]);
 
   useEffect(() => {
     gameLoopRef.current = requestAnimationFrame(gameLoop);
@@ -573,32 +575,76 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
 
   return (
     <div className="flex flex-col items-center space-y-6">
-      <div className="flex items-center justify-center space-x-4">
-        <motion.h2 
-          className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-center bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent`}
-          animate={{ 
-            filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.7))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
-          }}
-          transition={{ duration: 3, repeat: Infinity }}
-        >
-          Moth Survival
-        </motion.h2>
+      <div className="flex items-center justify-between w-full max-w-4xl">
+        <div className="flex items-center space-x-4">
+          <motion.h2 
+            className={`${isMobile ? 'text-xl' : 'text-4xl'} font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent`}
+            animate={{ 
+              filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.7))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
+            }}
+            transition={{ duration: 3, repeat: Infinity }}
+          >
+            Moth to the Lamp
+          </motion.h2>
+          
+          {isMobile && (
+            <motion.button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-2 px-3 rounded-full text-sm shadow-lg shadow-orange-500/25 border border-orange-400/30"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              ☰
+            </motion.button>
+          )}
+        </div>
         
-        <motion.button
-          onClick={() => window.location.href = '#leaderboard'}
-          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-full text-sm shadow-lg shadow-purple-500/25 border border-purple-400/30"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          🏆 Leaderboard
-        </motion.button>
+        {!isMobile && (
+          <motion.button
+            onClick={() => window.location.href = '#leaderboard'}
+            className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-2 px-4 rounded-full text-sm shadow-lg shadow-orange-500/25 border border-orange-400/30"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            🏆 Leaderboard
+          </motion.button>
+        )}
       </div>
+
+      {isMobile && menuOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-black/80 backdrop-blur-md rounded-xl p-4 border border-orange-500/30 w-full max-w-sm"
+        >
+          <div className="flex flex-col space-y-2">
+            <button
+              onClick={() => {
+                window.location.href = '#leaderboard';
+                setMenuOpen(false);
+              }}
+              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+            >
+              🏆 Leaderboard
+            </button>
+            <button
+              onClick={() => {
+                window.location.href = '#about';
+                setMenuOpen(false);
+              }}
+              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+            >
+              ℹ️ About
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       <div className="relative">
         <motion.canvas
           ref={canvasRef}
-          width={isMobile ? 350 : 800}
-          height={isMobile ? 250 : 500}
+          width={isMobile ? 380 : 800}
+          height={isMobile ? 280 : 500}
           className={`border border-orange-500/30 rounded-lg shadow-2xl shadow-orange-500/20 ${isMobile ? 'w-full max-w-sm' : ''}`}
           animate={isShaking ? { 
             x: [0, -5, 5, -5, 5, 0],
@@ -619,7 +665,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
               >
                 <div className={`${isMobile ? 'text-4xl' : 'text-6xl'} mb-2`}>🦋</div>
                 <div className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-orange-300`}>
-                  Survive the Journey
+                  Reach the Lamp
                 </div>
               </motion.div>
               
@@ -651,7 +697,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
                   )}
                 </div>
                 <p className="text-orange-400 text-xs">
-                  Survive as long as possible! Avoid red obstacles and shoot them for bonus points!
+                  Reach the glowing lamp! Avoid red obstacles and shoot them for bonus points!
                 </p>
               </div>
             </div>

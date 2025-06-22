@@ -59,15 +59,29 @@ const Index = () => {
         <div className="container mx-auto px-4 py-8">
           <AnimatePresence mode="wait">
             {activeTab === 'home' && (
-              <motion.div
-                key="home"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.5 }}
-              >
-                <MothGame onScoreUpdate={handleScoreUpdate} />
-              </motion.div>
+              <div className="flex gap-8 max-w-7xl mx-auto">
+                <motion.div
+                  key="home"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.5 }}
+                  className="flex-1"
+                >
+                  <MothGame onScoreUpdate={handleScoreUpdate} />
+                </motion.div>
+                
+                {/* Desktop Leaderboard */}
+                <div className="hidden lg:block w-80">
+                  <motion.div
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                  >
+                    <Leaderboard />
+                  </motion.div>
+                </div>
+              </div>
             )}
 
             {activeTab === 'leaderboard' && (
