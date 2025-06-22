@@ -47,6 +47,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
   const [showWalletPrompt, setShowWalletPrompt] = useState(false);
   const [tempPlayerName, setTempPlayerName] = useState('');
   const [currentScore, setCurrentScore] = useState(0);
+  const [lampImageLoaded, setLampImageLoaded] = useState(false);
+  const [lampImageError, setLampImageError] = useState(false);
 
   const gameStateRef = useRef({
     moth: { x: 100, y: 250, width: 50, height: 35, velocityY: 0 },
@@ -254,7 +256,19 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
   };
 
   const drawLampImage = new Image();
-  drawLampImage.src = '/—Pngtree—vector lamp icon_4091194.svg';
+  
+  useEffect(() => {
+    drawLampImage.onload = () => {
+      setLampImageLoaded(true);
+    };
+    
+    drawLampImage.onerror = () => {
+      setLampImageError(true);
+      console.error('Failed to load lamp SVG');
+    };
+    
+    drawLampImage.src = '/—Pngtree—vector lamp icon_4091194.svg';
+  }, []);
 
   const drawObstacle = (ctx: CanvasRenderingContext2D, obstacle: Obstacle, time: number) => {
     ctx.save();
@@ -269,16 +283,10 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
     ctx.shadowColor = '#FFD700';
     ctx.globalAlpha = 0.9;
     
-    // Draw lamp image if loaded, otherwise fallback to circle
-    if (drawLampImage.complete && drawLampImage.naturalHeight !== 0) {
+    // Draw lamp image if loaded
+    if (lampImageLoaded && !lampImageError) {
       const size = obstacle.width * 1.2; // Scale to fit obstacle size
       ctx.drawImage(drawLampImage, -size/2, -size/2, size, size);
-    } else {
-      // Fallback: golden glowing circle
-      ctx.fillStyle = '#FFD700';
-      ctx.beginPath();
-      ctx.arc(0, 0, obstacle.width * 0.3, 0, Math.PI * 2);
-      ctx.fill();
     }
     
     ctx.restore();
@@ -518,8 +526,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
               } else {
                 // Show wallet prompt for non-connected users
                 setShowWalletPrompt(true);
-                onScoreUpdate(state.continuousScore);
-              }
+            width: 42, // 50% larger than previous size (28 * 1.5 = 42)
+            height: 42, // 50% larger than previous size (28 * 1.5 = 42)
             }
             return newLives;
           });
@@ -847,6 +855,14 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
         {gameState === 'menu' && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-lg">
             <div className="text-center p-6">
+              {/* Show loading screen if lamp image is not loaded */}
+              {!lampImageLoaded && !lampImageError && (
+                <div className="mb-6">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mx-auto mb-4"></div>
+                  <p className="text-orange-300 text-sm">Loading game assets...</p>
+                </div>
+              )}
+              
               <motion.div
                 className="mb-6"
                 animate={{ 
@@ -862,6 +878,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
               
               <motion.button
                 onClick={startGame}
+                disabled={!lampImageLoaded && !lampImageError}
                 className={`bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-4 px-6 text-base' : 'py-4 px-8 text-lg'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 touch-manipulation clickable`}
                 style={{ 
                   touchAction: 'manipulation',
@@ -872,11 +889,15 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                 }}
                 whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.6)' }}
                 whileTap={{ scale: 0.95 }}
-                onTouchEnd={startGame}
+                onTouchEnd={(e) => {
+                  if (lampImageLoaded || lampImageError) {
+                    startGame(e);
+                  }
+                }}
               >
                 <div className="flex items-center space-x-2">
                   <span>🦋</span>
-                  <span>Start Game</span>
+                  <span>{(!lampImageLoaded && !lampImageError) ? 'Loading...' : 'Start Game'}</span>
                 </div>
               </motion.button>
               
@@ -897,6 +918,11 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                 </div>
                 <p className="text-orange-400 text-xs">
                   Survive as long as possible! Avoid red obstacles and shoot them for bonus points!
+                  {lampImageError && (
+                    <span className="block mt-2 text-red-400">
+                      Note: Some visual elements may not display correctly.
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
