@@ -145,6 +145,11 @@ const Index = () => {
                           </h2>
                           <motion.button
                             onClick={() => setShowLeaderboard(false)}
+                            onTouchEnd={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setShowLeaderboard(false);
+                            }}
                             className="text-orange-300 hover:text-orange-200 text-2xl"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
@@ -179,6 +184,11 @@ const Index = () => {
                           <h2 className="text-3xl font-bold text-white">About $MOTH</h2>
                           <motion.button
                             onClick={() => setShowAbout(false)}
+                            onTouchEnd={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setShowAbout(false);
+                            }}
                             className="text-orange-300 hover:text-orange-200 text-2xl"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}

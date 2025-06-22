@@ -66,6 +66,11 @@ const Navigation: React.FC<NavigationProps> = ({
             {/* Mobile Menu Button - Three Lines Only */}
             <motion.button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsMenuOpen(!isMenuOpen);
+              }}
               className="bg-black/20 backdrop-blur-md rounded-full p-3 border border-orange-500/30 flex flex-col justify-center items-center space-y-1 touch-manipulation clickable"
               style={{ 
                 touchAction: 'manipulation',
@@ -76,15 +81,6 @@ const Navigation: React.FC<NavigationProps> = ({
               }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onTouchStart={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setIsMenuOpen(!isMenuOpen);
-              }}
             >
               <div className="w-5 h-0.5 bg-orange-400 rounded"></div>
               <div className="w-5 h-0.5 bg-orange-400 rounded"></div>
@@ -111,6 +107,11 @@ const Navigation: React.FC<NavigationProps> = ({
                   <h3 className="text-orange-200 font-semibold text-lg">Menu</h3>
                   <motion.button
                     onClick={() => setIsMenuOpen(false)}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsMenuOpen(false);
+                    }}
                     className="text-orange-300 hover:text-orange-200 text-xl touch-manipulation clickable"
                     style={{ 
                       touchAction: 'manipulation',
@@ -135,6 +136,12 @@ const Navigation: React.FC<NavigationProps> = ({
                     setActiveTab('home');
                     setIsMenuOpen(false);
                   }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setActiveTab('home');
+                    setIsMenuOpen(false);
+                  }}
                   className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 flex items-center space-x-2 touch-manipulation clickable"
                   style={{ 
                     touchAction: 'manipulation',
@@ -153,6 +160,12 @@ const Navigation: React.FC<NavigationProps> = ({
                 {onShowLeaderboard && (
                   <motion.button
                     onClick={() => {
+                      onShowLeaderboard();
+                      setIsMenuOpen(false);
+                    }}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       onShowLeaderboard();
                       setIsMenuOpen(false);
                     }}
@@ -175,6 +188,12 @@ const Navigation: React.FC<NavigationProps> = ({
                 {onShowAbout && (
                   <motion.button
                     onClick={() => {
+                      onShowAbout();
+                      setIsMenuOpen(false);
+                    }}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       onShowAbout();
                       setIsMenuOpen(false);
                     }}
@@ -222,6 +241,11 @@ const Navigation: React.FC<NavigationProps> = ({
                   WebkitTapHighlightColor: 'transparent'
                 }}
                 onClick={() => setIsMenuOpen(false)}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsMenuOpen(false);
+                }}
               />
             )}
           </div>
@@ -257,6 +281,11 @@ const Navigation: React.FC<NavigationProps> = ({
               {activeTab === 'home' && onShowLeaderboard && (
                 <motion.button
                   onClick={onShowLeaderboard}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onShowLeaderboard();
+                  }}
                   className="px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 text-orange-200 hover:text-white hover:bg-orange-800/30"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -270,6 +299,11 @@ const Navigation: React.FC<NavigationProps> = ({
               {activeTab === 'home' && onShowAbout && (
                 <motion.button
                   onClick={onShowAbout}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onShowAbout();
+                  }}
                   className="px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 text-orange-200 hover:text-white hover:bg-orange-800/30"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
