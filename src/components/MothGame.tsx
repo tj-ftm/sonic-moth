@@ -367,12 +367,12 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     }
     
     // Spawn obstacles with fixed timing
-    if (currentTime - state.lastObstacleSpawn > 1200) {
-      const numObstacles = Math.random() < 0.3 ? 2 : 1;
+    if (currentTime - state.lastObstacleSpawn > 800) {
+      const numObstacles = Math.random() < 0.6 ? 3 : 2;
       
       for (let i = 0; i < numObstacles; i++) {
         state.obstacles.push({
-          x: canvas.width + i * 150,
+          x: canvas.width + i * 120,
           y: Math.random() * (canvas.height - 100) + 50,
           width: 60,
           height: 60,
