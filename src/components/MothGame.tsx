@@ -197,9 +197,9 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     const canvas = ctx.canvas;
     
     // Adjust sun position for mobile
-    const sunX = isMobile ? canvas.width - 100 : 800;
-    const sunY = isMobile ? 150 : 250;
-    const sunRadius = isMobile ? 80 : 200;
+    const sunX = isMobile ? canvas.width - 80 : 800;
+    const sunY = isMobile ? canvas.height / 2 : 250;
+    const sunRadius = isMobile ? 120 : 200;
     
     // Create radial gradient for sun effect
     const gradient = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius);
@@ -210,7 +210,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     
     ctx.fillStyle = gradient;
     if (isMobile) {
-      ctx.fillRect(canvas.width - 150, 50, 150, 250);
+      ctx.fillRect(canvas.width - 160, 0, 160, canvas.height);
     } else {
       ctx.fillRect(600, 50, 400, 400);
     }
@@ -219,8 +219,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
     ctx.lineWidth = 2;
     const rayCount = isMobile ? 8 : 12;
-    const rayInner = isMobile ? 40 : 100;
-    const rayOuter = isMobile ? 60 : 150;
+    const rayInner = isMobile ? 50 : 100;
+    const rayOuter = isMobile ? 80 : 150;
     
     for (let i = 0; i < rayCount; i++) {
       const angle = (i * Math.PI * 2) / rayCount + time * 0.001;

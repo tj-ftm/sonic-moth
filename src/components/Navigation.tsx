@@ -196,7 +196,7 @@ const Navigation: React.FC<NavigationProps> = ({
               {activeTab === 'home' && onShowAbout && (
                 <motion.button
                   onClick={onShowAbout}
-                  className="px-6 py-3 text-sm rounded-full font-medium transition-all duration-300 bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25"
+                  className="px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 text-orange-200 hover:text-white hover:bg-orange-800/30"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -209,7 +209,7 @@ const Navigation: React.FC<NavigationProps> = ({
               {activeTab === 'home' && onShowLeaderboard && (
                 <motion.button
                   onClick={onShowLeaderboard}
-                  className="px-6 py-3 text-sm rounded-full font-medium transition-all duration-300 bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25"
+                  className="px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 text-orange-200 hover:text-white hover:bg-orange-800/30"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
