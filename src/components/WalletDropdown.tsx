@@ -201,12 +201,16 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
           
           if (pendingScore) {
             // Submit score to Supabase
-            await submitScore(
-              accounts[0],
-              parseInt(pendingScore),
-              pendingPlayerName || '',
-              Date.now().toString()
-            );
+            try {
+              await submitScore(
+                accounts[0],
+                parseInt(pendingScore),
+                pendingPlayerName || '',
+                Date.now().toString()
+              );
+            } catch (error) {
+              console.error('Error submitting pending score:', error);
+            }
             
             localStorage.setItem('currentMothScore', pendingScore);
             
@@ -278,13 +282,25 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
       e.stopPropagation();
     }
     
-    // Also save wallet-specific display name if connected
-    if (walletConnected && walletAddress) {
-      await createOrUpdateUserProfile(walletAddress, userName);
-    } else {
-      localStorage.setItem('mothUserName', userName);
-    }
-    setIsEditingName(false);
+    // Save name function
+    const saveName = async () => {
+      try {
+        // Also save wallet-specific display name if connected
+        if (walletConnected && walletAddress) {
+          await createOrUpdateUserProfile(walletAddress, userName);
+        } else {
+          localStorage.setItem('mothUserName', userName);
+        }
+        setIsEditingName(false);
+      } catch (error) {
+        console.error('Error saving name:', error);
+        // Fallback to localStorage
+        localStorage.setItem('mothUserName', userName);
+        setIsEditingName(false);
+      }
+    };
+    
+    saveName();
   };
 
   const formatAddress = (address: string) => {
