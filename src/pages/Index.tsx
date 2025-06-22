@@ -148,6 +148,11 @@ const Index = () => {
                             className="text-orange-300 hover:text-orange-200 text-2xl"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
+                            onTouchStart={(e) => e.stopPropagation()}
+                            onTouchEnd={(e) => {
+                              e.stopPropagation();
+                              setShowLeaderboard(false);
+                            }}
                           >
                             ✕
                           </motion.button>
@@ -182,6 +187,11 @@ const Index = () => {
                             className="text-orange-300 hover:text-orange-200 text-2xl"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
+                            onTouchStart={(e) => e.stopPropagation()}
+                            onTouchEnd={(e) => {
+                              e.stopPropagation();
+                              setShowAbout(false);
+                            }}
                           >
                             ✕
                           </motion.button>
@@ -222,6 +232,11 @@ const Index = () => {
                               className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30"
                               whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
                               whileTap={{ scale: 0.95 }}
+                              onTouchStart={(e) => e.stopPropagation()}
+                              onTouchEnd={(e) => {
+                                e.stopPropagation();
+                                window.open('https://twitter.com/moth_token', '_blank');
+                              }}
                             >
                               𝕏 Twitter
                             </motion.a>
@@ -233,6 +248,11 @@ const Index = () => {
                               className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30"
                               whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
                               whileTap={{ scale: 0.95 }}
+                              onTouchStart={(e) => e.stopPropagation()}
+                              onTouchEnd={(e) => {
+                                e.stopPropagation();
+                                window.open('https://dexscreener.com/sonic/moth', '_blank');
+                              }}
                             >
                               📊 DexScreener
                             </motion.a>
@@ -244,6 +264,11 @@ const Index = () => {
                               className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30"
                               whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
                               whileTap={{ scale: 0.95 }}
+                              onTouchStart={(e) => e.stopPropagation()}
+                              onTouchEnd={(e) => {
+                                e.stopPropagation();
+                                window.open('https://t.me/moth_token', '_blank');
+                              }}
                             >
                               📱 Telegram
                             </motion.a>

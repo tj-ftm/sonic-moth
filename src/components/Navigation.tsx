@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import WalletDropdown from './WalletDropdown';
@@ -76,15 +75,6 @@ const Navigation: React.FC<NavigationProps> = ({
               }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onTouchStart={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setIsMenuOpen(!isMenuOpen);
-              }}
             >
               <div className="w-5 h-0.5 bg-orange-400 rounded"></div>
               <div className="w-5 h-0.5 bg-orange-400 rounded"></div>
@@ -124,6 +114,11 @@ const Navigation: React.FC<NavigationProps> = ({
                     }}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => {
+                      e.stopPropagation();
+                      setIsMenuOpen(false);
+                    }}
                   >
                     ✕
                   </motion.button>
@@ -144,6 +139,12 @@ const Navigation: React.FC<NavigationProps> = ({
                   }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onTouchEnd={(e) => {
+                    e.stopPropagation();
+                    setActiveTab('home');
+                    setIsMenuOpen(false);
+                  }}
                 >
                   <span>🦋</span>
                   <span>Home</span>
@@ -165,6 +166,12 @@ const Navigation: React.FC<NavigationProps> = ({
                     }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => {
+                      e.stopPropagation();
+                      onShowLeaderboard();
+                      setIsMenuOpen(false);
+                    }}
                   >
                     <span>🏆</span>
                     <span>Leaderboard</span>
@@ -187,6 +194,12 @@ const Navigation: React.FC<NavigationProps> = ({
                     }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => {
+                      e.stopPropagation();
+                      onShowAbout();
+                      setIsMenuOpen(false);
+                    }}
                   >
                     <span>ℹ️</span>
                     <span>About</span>

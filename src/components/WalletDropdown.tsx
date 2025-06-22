@@ -281,6 +281,11 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
           }}
           whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
           whileTap={{ scale: 0.95 }}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => {
+            e.stopPropagation();
+            handleConnect();
+          }}
         >
           <div className="flex items-center space-x-2">
             <span>🐰</span>
@@ -311,6 +316,11 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
         }}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
       >
         <div className="flex items-center space-x-2">
           <span>🦋</span>
@@ -380,6 +390,11 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
                         cursor: 'pointer',
                         minHeight: '40px'
                       }}
+                      onTouchStart={(e) => e.stopPropagation()}
+                      onTouchEnd={(e) => {
+                        e.stopPropagation();
+                        handleSaveName();
+                      }}
                     >
                       Save
                     </button>
@@ -396,6 +411,11 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
                         cursor: 'pointer',
                         minHeight: '32px',
                         padding: '8px'
+                      }}
+                      onTouchStart={(e) => e.stopPropagation()}
+                      onTouchEnd={(e) => {
+                        e.stopPropagation();
+                        setIsEditingName(true);
                       }}
                     >
                       Edit
@@ -417,6 +437,11 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
                 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                onTouchStart={(e) => e.stopPropagation()}
+                onTouchEnd={(e) => {
+                  e.stopPropagation();
+                  handleDisconnect();
+                }}
               >
                 Disconnect Wallet
               </motion.button>
