@@ -25,6 +25,7 @@ const Navigation: React.FC<NavigationProps> = ({
   onShowAbout
 }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -40,17 +41,133 @@ const Navigation: React.FC<NavigationProps> = ({
     { id: 'home', label: 'Home', icon: '🦋' }
   ];
 
+  if (isMobile) {
+    return (
+      <nav className="relative z-20 p-2">
+        <div className="container mx-auto">
+          <div className="flex justify-center items-center">
+            {/* Mobile Menu Button */}
+            <motion.button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="bg-black/20 backdrop-blur-md rounded-full p-3 border border-orange-500/30"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="flex items-center space-x-2">
+                <span className="text-orange-400">☰</span>
+                <span className="text-orange-200 text-sm">Menu</span>
+              </div>
+            </motion.button>
+            
+            {/* Sliding Menu */}
+            <motion.div
+              initial={{ x: '-100%', opacity: 0 }}
+              animate={{ 
+                x: isMenuOpen ? 0 : '-100%', 
+                opacity: isMenuOpen ? 1 : 0 
+              }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="fixed left-0 top-0 h-full w-64 bg-gradient-to-br from-black via-gray-900 to-orange-900 border-r border-orange-500/30 backdrop-blur-md z-50"
+            >
+              <div className="p-4 space-y-4">
+                {/* Close Button */}
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-orange-200 font-semibold">Menu</h3>
+                  <motion.button
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-orange-300 hover:text-orange-200 text-xl"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    ✕
+                  </motion.button>
+                </div>
+                
+                {/* Home Button */}
+                <motion.button
+                  onClick={() => {
+                    setActiveTab('home');
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-orange-500/25 flex items-center space-x-2"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span>🦋</span>
+                  <span>Home</span>
+                </motion.button>
+                
+                {/* About Button */}
+                {onShowAbout && (
+                  <motion.button
+                    onClick={() => {
+                      onShowAbout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-orange-500/25 flex items-center space-x-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span>ℹ️</span>
+                    <span>About</span>
+                  </motion.button>
+                )}
+                
+                {/* Leaderboard Button */}
+                {onShowLeaderboard && (
+                  <motion.button
+                    onClick={() => {
+                      onShowLeaderboard();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-orange-500/25 flex items-center space-x-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span>🏆</span>
+                    <span>Leaderboard</span>
+                  </motion.button>
+                )}
+                
+                {/* Wallet Section */}
+                <div className="pt-4 border-t border-orange-500/30">
+                  <WalletDropdown
+                    walletConnected={walletConnected}
+                    balances={balances}
+                    userPoints={userPoints}
+                    onWalletConnect={onWalletConnect}
+                  />
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* Overlay */}
+            {isMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+                onClick={() => setIsMenuOpen(false)}
+              />
+            )}
+          </div>
+        </div>
+      </nav>
+    );
+  }
+
   return (
-    <nav className={`relative z-20 ${isMobile ? 'p-2' : 'p-6'}`}>
+    <nav className="relative z-20 p-6">
       <div className="container mx-auto">
         <div className="flex justify-center items-center">
-          <div className={`bg-black/20 backdrop-blur-md rounded-full ${isMobile ? 'p-1' : 'p-2'} border border-orange-500/30`}>
-            <div className={`flex ${isMobile ? 'space-x-1' : 'space-x-2'} items-center`}>
+          <div className="bg-black/20 backdrop-blur-md rounded-full p-2 border border-orange-500/30">
+            <div className="flex space-x-2 items-center">
               {tabs.map((tab) => (
                 <motion.button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`${isMobile ? 'px-3 py-2 text-xs' : 'px-6 py-3 text-sm'} rounded-full font-medium transition-all duration-300 ${
+                  className={`px-6 py-3 text-sm rounded-full font-medium transition-all duration-300 ${
                     activeTab === tab.id
                       ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25'
                       : 'text-orange-200 hover:text-white hover:bg-orange-800/30'
@@ -58,7 +175,7 @@ const Navigation: React.FC<NavigationProps> = ({
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <span className={isMobile ? 'mr-1' : 'mr-2'}>{tab.icon}</span>
+                  <span className="mr-2">{tab.icon}</span>
                   {tab.label}
                 </motion.button>
               ))}
@@ -67,12 +184,12 @@ const Navigation: React.FC<NavigationProps> = ({
               {activeTab === 'home' && onShowAbout && (
                 <motion.button
                   onClick={onShowAbout}
-                  className={`${isMobile ? 'px-3 py-2 text-xs' : 'px-6 py-3 text-sm'} rounded-full font-medium transition-all duration-300 bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25`}
+                  className="px-6 py-3 text-sm rounded-full font-medium transition-all duration-300 bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <span className={isMobile ? 'mr-1' : 'mr-2'}>ℹ️</span>
-                  {isMobile ? 'Info' : 'About'}
+                  <span className="mr-2">ℹ️</span>
+                  About
                 </motion.button>
               )}
               
@@ -80,12 +197,12 @@ const Navigation: React.FC<NavigationProps> = ({
               {activeTab === 'home' && onShowLeaderboard && (
                 <motion.button
                   onClick={onShowLeaderboard}
-                  className={`${isMobile ? 'px-3 py-2 text-xs' : 'px-6 py-3 text-sm'} rounded-full font-medium transition-all duration-300 bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25`}
+                  className="px-6 py-3 text-sm rounded-full font-medium transition-all duration-300 bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <span className={isMobile ? 'mr-1' : 'mr-2'}>🏆</span>
-                  {isMobile ? 'Board' : 'Leaderboard'}
+                  <span className="mr-2">🏆</span>
+                  Leaderboard
                 </motion.button>
               )}
               

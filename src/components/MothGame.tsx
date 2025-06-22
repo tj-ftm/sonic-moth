@@ -194,26 +194,40 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     ctx.save();
     
     const glowIntensity = 30 + Math.sin(time * 0.003) * 10;
+    const canvas = ctx.canvas;
+    
+    // Adjust sun position for mobile
+    const sunX = isMobile ? canvas.width - 100 : 800;
+    const sunY = isMobile ? 150 : 250;
+    const sunRadius = isMobile ? 80 : 200;
     
     // Create radial gradient for sun effect
-    const gradient = ctx.createRadialGradient(800, 250, 0, 800, 250, 200);
+    const gradient = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius);
     gradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
     gradient.addColorStop(0.3, 'rgba(255, 165, 0, 0.6)');
     gradient.addColorStop(0.6, 'rgba(255, 69, 0, 0.4)');
     gradient.addColorStop(1, 'rgba(255, 69, 0, 0)');
     
     ctx.fillStyle = gradient;
-    ctx.fillRect(600, 50, 400, 400);
+    if (isMobile) {
+      ctx.fillRect(canvas.width - 150, 50, 150, 250);
+    } else {
+      ctx.fillRect(600, 50, 400, 400);
+    }
     
     // Add sun rays
     ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
     ctx.lineWidth = 2;
-    for (let i = 0; i < 12; i++) {
-      const angle = (i * Math.PI * 2) / 12 + time * 0.001;
-      const x1 = 800 + Math.cos(angle) * 100;
-      const y1 = 250 + Math.sin(angle) * 100;
-      const x2 = 800 + Math.cos(angle) * 150;
-      const y2 = 250 + Math.sin(angle) * 150;
+    const rayCount = isMobile ? 8 : 12;
+    const rayInner = isMobile ? 40 : 100;
+    const rayOuter = isMobile ? 60 : 150;
+    
+    for (let i = 0; i < rayCount; i++) {
+      const angle = (i * Math.PI * 2) / rayCount + time * 0.001;
+      const x1 = sunX + Math.cos(angle) * rayInner;
+      const y1 = sunY + Math.sin(angle) * rayInner;
+      const x2 = sunX + Math.cos(angle) * rayOuter;
+      const y2 = sunY + Math.sin(angle) * rayOuter;
       
       ctx.beginPath();
       ctx.moveTo(x1, y1);
@@ -280,14 +294,14 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     
     // Draw semi-transparent background for UI
     ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-    ctx.fillRect(10, 10, canvasWidth - 20, isMobile ? 60 : 70);
+    ctx.fillRect(10, 10, canvasWidth - 20, isMobile ? 80 : 70);
     ctx.strokeStyle = 'rgba(249, 115, 22, 0.3)';
     ctx.lineWidth = 1;
-    ctx.strokeRect(10, 10, canvasWidth - 20, isMobile ? 60 : 70);
+    ctx.strokeRect(10, 10, canvasWidth - 20, isMobile ? 80 : 70);
     
     // Draw lives (hearts)
     const heartSize = isMobile ? 20 : 28;
-    const heartY = isMobile ? 30 : 40;
+    const heartY = isMobile ? 25 : 40;
     
     ctx.font = `${heartSize}px Arial`;
     ctx.textAlign = 'left';
@@ -295,11 +309,11 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     // Lives label
     ctx.fillStyle = '#FB923C';
     ctx.font = `${isMobile ? 16 : 20}px Arial`;
-    ctx.fillText('Lives:', 20, heartY - 8);
+    ctx.fillText('Lives:', 20, heartY - 5);
     
     // Draw hearts based on current lives
     for (let i = 0; i < 3; i++) {
-      const heartX = 80 + (i * (heartSize + 8));
+      const heartX = 80 + (i * (heartSize + 5));
       
       if (i < lives) {
         // Glowing heart
@@ -307,13 +321,13 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
         ctx.shadowColor = '#EF4444';
         ctx.fillStyle = '#EF4444';
         ctx.font = `${heartSize}px Arial`;
-        ctx.fillText('❤️', heartX, heartY + 8);
+        ctx.fillText('❤️', heartX, heartY + 5);
       } else {
         // Empty heart
         ctx.shadowBlur = 0;
         ctx.fillStyle = '#666666';
         ctx.font = `${heartSize}px Arial`;
-        ctx.fillText('🖤', heartX, heartY + 8);
+        ctx.fillText('🖤', heartX, heartY + 5);
       }
     }
     
@@ -328,10 +342,18 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     const rightX = canvasWidth - 20;
     
     // Score
-    ctx.fillText('Score:', rightX - 80, heartY - 8);
+    ctx.fillText('Score:', rightX - 80, heartY - 5);
     ctx.fillStyle = '#FFFFFF';
     ctx.font = `bold ${isMobile ? 18 : 24}px Arial`;
-    ctx.fillText(score.toLocaleString(), rightX, heartY - 8);
+    ctx.fillText(score.toLocaleString(), rightX, heartY - 5);
+    
+    // Mobile control instructions
+    if (isMobile) {
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(255, 165, 0, 0.8)';
+      ctx.font = '12px Arial';
+      ctx.fillText('Drag Left: Move | Tap Right: Shoot', canvasWidth / 2, heartY + 25);
+    }
     
     ctx.restore();
   };
@@ -650,19 +672,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
         />
         
         {/* Mobile Touch Control Indicators */}
-        {isMobile && gameState === 'playing' && (
-          <div className="absolute inset-0 pointer-events-none">
-            {/* Left side drag indicator */}
-            <div className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-orange-600/60 text-white rounded-lg px-2 py-1 text-xs">
-              Drag to Move
-            </div>
-            
-            {/* Right side tap indicator */}
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-yellow-600/60 text-white rounded-lg px-2 py-1 text-xs">
-              Tap to Shoot
-            </div>
-          </div>
-        )}
         
         {gameState === 'menu' && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-lg">
