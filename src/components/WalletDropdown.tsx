@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface WalletDropdownProps {
@@ -17,15 +16,144 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [showWalletOptions, setShowWalletOptions] = useState(false);
   const [userName, setUserName] = useState(localStorage.getItem('mothUserName') || '');
   const [isEditingName, setIsEditingName] = useState(false);
+  const [walletAddress, setWalletAddress] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
 
-  const handleConnect = async () => {
-    setIsConnecting(true);
-    setTimeout(() => {
+  const SONIC_NETWORK = {
+    chainId: '0x92', // 146 in hex
+    chainName: 'Sonic Network',
+    nativeCurrency: {
+      name: 'Sonic',
+      symbol: 'S',
+      decimals: 18,
+    },
+    rpcUrls: ['https://rpc.soniclabs.com'],
+    blockExplorerUrls: ['https://sonicscan.org'],
+  };
+
+  useEffect(() => {
+    if (walletConnected && typeof window.ethereum !== 'undefined') {
+      // Get current account
+      window.ethereum.request({ method: 'eth_accounts' })
+        .then((accounts: string[]) => {
+          if (accounts.length > 0) {
+            setWalletAddress(accounts[0]);
+          }
+        });
+    }
+  }, [walletConnected]);
+
+  const checkAndSwitchNetwork = async (provider: any) => {
+    try {
+      const chainId = await provider.request({ method: 'eth_chainId' });
+      
+      if (chainId !== SONIC_NETWORK.chainId) {
+        try {
+          await provider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: SONIC_NETWORK.chainId }],
+          });
+        } catch (switchError: any) {
+          if (switchError.code === 4902) {
+            try {
+              await provider.request({
+                method: 'wallet_addEthereumChain',
+                params: [SONIC_NETWORK],
+              });
+            } catch (addError) {
+              throw new Error('Failed to add Sonic Network to wallet');
+            }
+          } else {
+            throw new Error('Failed to switch to Sonic Network');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Network switch error:', error);
+      throw error;
+    }
+  };
+
+  const connectMetaMask = async () => {
+    try {
+      if (typeof window.ethereum !== 'undefined') {
+        setIsConnecting(true);
+        setError(null);
+        
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts',
+        });
+        
+        if (accounts.length > 0) {
+          await checkAndSwitchNetwork(window.ethereum);
+          setWalletAddress(accounts[0]);
+          onWalletConnect(true);
+          setShowWalletOptions(false);
+        }
+      } else {
+        setError('MetaMask is not installed');
+      }
+    } catch (error: any) {
+      setError(error.message || 'Failed to connect to MetaMask');
+    } finally {
       setIsConnecting(false);
-      onWalletConnect(true);
-    }, 2000);
+    }
+  };
+
+  const connectRabby = async () => {
+    try {
+      if (typeof window.ethereum !== 'undefined' && window.ethereum.isRabby) {
+        setIsConnecting(true);
+        setError(null);
+        
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts',
+        });
+        
+        if (accounts.length > 0) {
+          await checkAndSwitchNetwork(window.ethereum);
+          setWalletAddress(accounts[0]);
+          onWalletConnect(true);
+          setShowWalletOptions(false);
+        }
+      } else {
+        setError('Rabby Wallet is not installed');
+      }
+    } catch (error: any) {
+      setError(error.message || 'Failed to connect to Rabby Wallet');
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const connectWalletConnect = async () => {
+    try {
+      setIsConnecting(true);
+      setError(null);
+      
+      setTimeout(async () => {
+        try {
+          setWalletAddress('0x1234...5678'); // Simulated address
+          onWalletConnect(true);
+          setShowWalletOptions(false);
+        } catch (error: any) {
+          setError('Failed to connect via WalletConnect');
+        } finally {
+          setIsConnecting(false);
+        }
+      }, 2000);
+    } catch (error: any) {
+      setError(error.message || 'Failed to connect via WalletConnect');
+      setIsConnecting(false);
+    }
+  };
+
+  const handleConnect = () => {
+    setShowWalletOptions(true);
+    setError(null);
   };
 
   const handleSaveName = () => {
@@ -33,26 +161,89 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
     setIsEditingName(false);
   };
 
+  const formatAddress = (address: string) => {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
   if (!walletConnected) {
+    if (showWalletOptions) {
+      return (
+        <div className="relative ml-2">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="absolute right-0 top-0 w-80 bg-black/90 backdrop-blur-md rounded-xl border border-orange-500/30 shadow-2xl shadow-orange-500/20 z-50 p-6"
+          >
+            <h3 className="text-xl font-bold text-white mb-4 text-center">Choose Your Wallet</h3>
+            
+            {error && (
+              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-4">
+                <p className="text-red-200 text-sm">{error}</p>
+              </div>
+            )}
+            
+            <div className="space-y-3">
+              <motion.button
+                onClick={connectMetaMask}
+                disabled={isConnecting}
+                className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <span>🦊</span>
+                <span>MetaMask</span>
+                {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+              </motion.button>
+
+              <motion.button
+                onClick={connectRabby}
+                disabled={isConnecting}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <span>🐰</span>
+                <span>Rabby</span>
+                {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+              </motion.button>
+
+              <motion.button
+                onClick={connectWalletConnect}
+                disabled={isConnecting}
+                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <span>🔗</span>
+                <span>WalletConnect</span>
+                {isConnecting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+              </motion.button>
+            </div>
+
+            <motion.button
+              onClick={() => setShowWalletOptions(false)}
+              className="w-full mt-4 text-orange-300 hover:text-orange-200 underline"
+              whileHover={{ scale: 1.05 }}
+            >
+              Cancel
+            </motion.button>
+          </motion.div>
+        </div>
+      );
+    }
+
     return (
       <motion.button
         onClick={handleConnect}
-        disabled={isConnecting}
-        className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full text-sm shadow-lg shadow-orange-500/25 border border-orange-400/30 disabled:opacity-50 disabled:cursor-not-allowed ml-2"
+        className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full text-sm shadow-lg shadow-orange-500/25 border border-orange-400/30 ml-2"
         whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
         whileTap={{ scale: 0.95 }}
       >
-        {isConnecting ? (
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span>Connecting...</span>
-          </div>
-        ) : (
-          <div className="flex items-center space-x-2">
-            <span>🦋</span>
-            <span>Connect</span>
-          </div>
-        )}
+        <div className="flex items-center space-x-2">
+          <span>🦋</span>
+          <span>Connect</span>
+        </div>
       </motion.button>
     );
   }
@@ -67,7 +258,7 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
       >
         <div className="flex items-center space-x-2">
           <span>🦋</span>
-          <span>{userName || '0x1234...5678'}</span>
+          <span>{userName || formatAddress(walletAddress)}</span>
           <span className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}>▼</span>
         </div>
       </motion.button>
@@ -82,7 +273,7 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
           <div className="p-6 space-y-4">
             <div className="border-b border-orange-500/20 pb-4">
               <h3 className="text-white font-semibold mb-2">Wallet Details</h3>
-              <p className="text-orange-200 text-sm">0x1234...5678</p>
+              <p className="text-orange-200 text-sm">{formatAddress(walletAddress)}</p>
             </div>
 
             <div className="space-y-3">
