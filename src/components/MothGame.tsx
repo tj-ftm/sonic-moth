@@ -259,26 +259,64 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
   const drawObstacle = (ctx: CanvasRenderingContext2D, obstacle: Obstacle, time: number) => {
     ctx.save();
     
-    // Draw lamp with glow effect
+    // Draw lamp SVG with glow effect
     const rotation = time * 0.005;
     ctx.translate(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2);
     ctx.rotate(rotation);
     
     // Add glow effect
-    ctx.shadowBlur = 30;
+    ctx.shadowBlur = 40;
     ctx.shadowColor = '#FFD700';
-    ctx.globalAlpha = 0.8;
+    ctx.globalAlpha = 0.9;
     
-    // Draw lamp image if loaded, otherwise fallback to circle
-    if (drawLampImage.complete && drawLampImage.naturalHeight !== 0) {
-      const size = obstacle.width * 0.8; // Make lamp smaller
-      ctx.drawImage(drawLampImage, -size/2, -size/2, size, size);
-    } else {
-      // Fallback: golden glowing circle
-      ctx.fillStyle = '#FFD700';
+    // Draw lamp SVG shape
+    const size = obstacle.width * 1.2; // Increased size
+    
+    // Lamp base
+    ctx.fillStyle = '#8B4513';
+    ctx.fillRect(-size * 0.15, size * 0.3, size * 0.3, size * 0.2);
+    
+    // Lamp pole
+    ctx.fillStyle = '#654321';
+    ctx.fillRect(-size * 0.05, -size * 0.1, size * 0.1, size * 0.4);
+    
+    // Lamp shade (top part)
+    ctx.fillStyle = '#2F4F4F';
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.25, -size * 0.1);
+    ctx.lineTo(size * 0.25, -size * 0.1);
+    ctx.lineTo(size * 0.2, -size * 0.4);
+    ctx.lineTo(-size * 0.2, -size * 0.4);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Glowing light bulb
+    ctx.fillStyle = '#FFD700';
+    ctx.shadowBlur = 50;
+    ctx.shadowColor = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(0, -size * 0.25, size * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Light rays
+    ctx.strokeStyle = '#FFFF99';
+    ctx.lineWidth = 2;
+    ctx.shadowBlur = 20;
+    for (let i = 0; i < 8; i++) {
+      const angle = (i * Math.PI * 2) / 8;
+      const startRadius = size * 0.18;
+      const endRadius = size * 0.35;
+      
       ctx.beginPath();
-      ctx.arc(0, 0, obstacle.width * 0.3, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(
+        Math.cos(angle) * startRadius,
+        -size * 0.25 + Math.sin(angle) * startRadius
+      );
+      ctx.lineTo(
+        Math.cos(angle) * endRadius,
+        -size * 0.25 + Math.sin(angle) * endRadius
+      );
+      ctx.stroke();
     }
     
     ctx.restore();
@@ -518,8 +556,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
               } else {
                 // Show wallet prompt for non-connected users
                 setShowWalletPrompt(true);
-                onScoreUpdate(state.continuousScore);
-              }
+            width: 50, // Increased for better visibility
+            height: 50, // Increased for better visibility
             }
             return newLives;
           });
@@ -807,7 +845,14 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
           ref={canvasRef}
           width={isMobile ? 350 : 800}
           height={isMobile ? 600 : 500}
-          className={`border border-orange-500/30 rounded-lg shadow-2xl shadow-orange-500/20 ${isMobile ? 'w-full max-w-sm' : ''}`}
+          className={`border border-orange-500/30 rounded-lg shadow-2xl shadow-orange-500/20 ${isMobile ? 'w-full max-w-sm' : ''} game-container`}
+          style={{
+            display: 'block',
+            touchAction: 'none',
+            WebkitTouchCallout: 'none',
+            WebkitUserSelect: 'none',
+            userSelect: 'none'
+          }}
           animate={isShaking ? { 
             x: [0, -5, 5, -5, 5, 0],
             y: [0, -2, 2, -2, 2, 0]
@@ -842,7 +887,15 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
           </div>
         )}
         
-        {/* Mobile Touch Control Indicators */}
+        {/* Mobile Touch Control Instructions */}
+        {gameState === 'playing' && isMobile && (
+          <div className="absolute bottom-2 left-2 right-2 bg-black/60 backdrop-blur-sm rounded-lg p-2 border border-orange-500/20">
+            <div className="flex justify-between text-xs text-orange-200">
+              <span>👈 Drag: Move</span>
+              <span>👉 Tap: Shoot</span>
+            </div>
+          </div>
+        )}
         
         {gameState === 'menu' && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-lg">
@@ -887,16 +940,18 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                     <div className="space-y-1 text-orange-300">
                       <p>• Drag left side: Move up/down</p>
                       <p>• Tap right side: Shoot light</p>
+                      <p>• Avoid the glowing lamps!</p>
                     </div>
                   ) : (
                     <div className="space-y-1 text-orange-300">
                       <p>• WASD/Arrow Keys: Move up/down</p>
                       <p>• SPACE: Shoot glowing light</p>
+                      <p>• Avoid the glowing lamps!</p>
                     </div>
                   )}
                 </div>
                 <p className="text-orange-400 text-xs">
-                  Survive as long as possible! Avoid red obstacles and shoot them for bonus points!
+                  Survive as long as possible! Avoid the lamps and shoot them for bonus points!
                 </p>
               </div>
             </div>
