@@ -26,7 +26,7 @@ const Navigation: React.FC<NavigationProps> = ({
   onWalletConnect,
   onShowLeaderboard,
   onShowAbout,
-  onBalanceUpdate
+  onBalanceUpdate,
   walletAddress,
   onWalletConnectWithAddress
 }) => {
