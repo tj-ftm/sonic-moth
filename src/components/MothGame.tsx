@@ -254,7 +254,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
   };
 
   const drawLampImage = new Image();
-  drawLampImage.src = '/—Pngtree—vector lamp icon_4091194.svg';
+  drawLampImage.src = '/lamp.svg';
 
   const drawObstacle = (ctx: CanvasRenderingContext2D, obstacle: Obstacle, time: number) => {
     ctx.save();
