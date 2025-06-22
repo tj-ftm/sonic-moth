@@ -15,75 +15,24 @@ const Index = () => {
   const [balances, setBalances] = useState({ sonic: '0.00', moth: '0.00' });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-orange-900 relative overflow-hidden">
       <ParticleBackground />
       
       <div className="relative z-10">
-        <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
+        <Navigation 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab}
+          walletConnected={walletConnected}
+          balances={balances}
+          userPoints={userPoints}
+          onWalletConnect={setWalletConnected}
+        />
         
         <div className="container mx-auto px-4 py-8">
           <AnimatePresence mode="wait">
             {activeTab === 'home' && (
               <motion.div
                 key="home"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
-                className="space-y-8"
-              >
-                <div className="text-center mb-12">
-                  <motion.h1 
-                    className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-blue-400 bg-clip-text text-transparent mb-4"
-                    animate={{ 
-                      filter: ['drop-shadow(0 0 20px rgba(168, 85, 247, 0.5))', 'drop-shadow(0 0 30px rgba(168, 85, 247, 0.8))', 'drop-shadow(0 0 20px rgba(168, 85, 247, 0.5))']
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    $MOTH
-                  </motion.h1>
-                  <p className="text-xl text-purple-200 mb-8">
-                    Navigate the digital realm on Sonic Network
-                  </p>
-                  
-                  {!walletConnected ? (
-                    <WalletConnect onConnect={setWalletConnected} />
-                  ) : (
-                    <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-                      <BalanceCard 
-                        title="Sonic ($S)" 
-                        balance={balances.sonic} 
-                        gradient="from-blue-500 to-cyan-400"
-                      />
-                      <BalanceCard 
-                        title="MOTH Token" 
-                        balance={balances.moth} 
-                        gradient="from-purple-500 to-pink-400"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div className="text-center">
-                  <motion.div
-                    className="inline-block p-8 rounded-2xl bg-gradient-to-r from-purple-900/20 to-pink-900/20 border border-purple-500/30"
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <h2 className="text-3xl font-bold text-white mb-4">
-                      Current Points: {userPoints.toLocaleString()}
-                    </h2>
-                    <p className="text-purple-200">
-                      Play the moth game to earn more points!
-                    </p>
-                  </motion.div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === 'game' && (
-              <motion.div
-                key="game"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
@@ -114,16 +63,16 @@ const Index = () => {
                 transition={{ duration: 0.5 }}
                 className="max-w-4xl mx-auto"
               >
-                <div className="bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-2xl p-8 border border-purple-500/30">
+                <div className="bg-gradient-to-r from-orange-900/20 to-red-900/20 rounded-2xl p-8 border border-orange-500/30">
                   <h2 className="text-4xl font-bold text-white mb-6 text-center">About $MOTH</h2>
-                  <div className="space-y-6 text-purple-200">
+                  <div className="space-y-6 text-orange-200">
                     <p className="text-lg leading-relaxed">
                       Welcome to the $MOTH ecosystem on Sonic Network - where digital moths navigate through 
                       the luminous realm of decentralized gaming. Our platform combines the thrill of 
                       blockchain technology with engaging gameplay mechanics.
                     </p>
                     <div className="grid md:grid-cols-2 gap-6">
-                      <div className="bg-purple-800/20 rounded-xl p-6 border border-purple-400/20">
+                      <div className="bg-orange-800/20 rounded-xl p-6 border border-orange-400/20">
                         <h3 className="text-xl font-semibold text-white mb-3">Network Details</h3>
                         <ul className="space-y-2 text-sm">
                           <li><strong>Network:</strong> Sonic</li>
@@ -132,7 +81,7 @@ const Index = () => {
                           <li><strong>Explorer:</strong> sonicscan.org</li>
                         </ul>
                       </div>
-                      <div className="bg-pink-800/20 rounded-xl p-6 border border-pink-400/20">
+                      <div className="bg-red-800/20 rounded-xl p-6 border border-red-400/20">
                         <h3 className="text-xl font-semibold text-white mb-3">Token Info</h3>
                         <ul className="space-y-2 text-sm">
                           <li><strong>Symbol:</strong> $MOTH</li>
@@ -141,6 +90,41 @@ const Index = () => {
                           <li><strong>Game Points:</strong> Off-chain</li>
                         </ul>
                       </div>
+                    </div>
+                    
+                    <div className="flex justify-center space-x-6 mt-8">
+                      <motion.a
+                        href="https://twitter.com/moth_token"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30"
+                        whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        𝕏 Twitter
+                      </motion.a>
+                      
+                      <motion.a
+                        href="https://dexscreener.com/sonic/moth"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30"
+                        whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        📊 DexScreener
+                      </motion.a>
+                      
+                      <motion.a
+                        href="https://t.me/moth_token"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30"
+                        whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        📱 Telegram
+                      </motion.a>
                     </div>
                   </div>
                 </div>

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 
@@ -32,7 +31,9 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     obstacles: [] as Obstacle[],
     keys: { up: false, down: false, left: false, right: false },
     lastObstacleSpawn: 0,
-    invulnerable: 0
+    invulnerable: 0,
+    continuousScore: 0,
+    lastScoreTime: 0
   });
 
   const resetGame = () => {
@@ -45,7 +46,9 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       obstacles: [],
       keys: { up: false, down: false, left: false, right: false },
       lastObstacleSpawn: 0,
-      invulnerable: 0
+      invulnerable: 0,
+      continuousScore: 0,
+      lastScoreTime: 0
     };
   };
 
@@ -65,21 +68,23 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     ctx.restore();
   };
 
-  const drawMoth = (ctx: CanvasRenderingContext2D, moth: GameObject, time: number) => {
+  const drawMoth = (ctx: CanvasRenderingContext2D, moth: GameObject, time: number, isHit: boolean) => {
     ctx.save();
     
-    // Flapping animation
     const flapOffset = Math.sin(time * 0.01) * 3;
+    const color = isHit ? '#FF0000' : '#F97316';
+    const glowColor = isHit ? '#FF0000' : '#FB923C';
+    const glowIntensity = isHit ? 40 : 15;
     
-    // Moth body (glowing)
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = '#A855F7';
-    ctx.fillStyle = '#8B5CF6';
+    // Enhanced glow when hit
+    ctx.shadowBlur = glowIntensity;
+    ctx.shadowColor = glowColor;
+    ctx.fillStyle = color;
     ctx.fillRect(moth.x + 10, moth.y + 8, 10, 4);
     
     // Wings with flapping animation
-    ctx.fillStyle = '#E879F9';
-    ctx.shadowColor = '#E879F9';
+    ctx.fillStyle = isHit ? '#FF4444' : '#FB7185';
+    ctx.shadowColor = glowColor;
     
     // Left wing
     ctx.beginPath();
@@ -97,36 +102,30 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
   const drawLamp = (ctx: CanvasRenderingContext2D, lamp: GameObject, time: number) => {
     ctx.save();
     
-    // Pulsating glow effect
     const glowIntensity = 30 + Math.sin(time * 0.005) * 10;
+    
+    // Create smooth gradient without banding
+    const gradient = ctx.createRadialGradient(lamp.x + 20, lamp.y + 20, 0, lamp.x + 20, lamp.y + 20, 60);
+    gradient.addColorStop(0, '#FED7AA');
+    gradient.addColorStop(0.3, '#FB923C');
+    gradient.addColorStop(0.6, '#EA580C');
+    gradient.addColorStop(1, 'transparent');
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(lamp.x - 40, lamp.y - 40, 120, 120);
     
     // Lamp base
     ctx.shadowBlur = glowIntensity;
-    ctx.shadowColor = '#FEF08A';
-    ctx.fillStyle = '#FDE047';
+    ctx.shadowColor = '#FB923C';
+    ctx.fillStyle = '#EA580C';
     ctx.fillRect(lamp.x, lamp.y + 40, lamp.width, 20);
     
-    // Lamp bulb (glowing)
-    ctx.shadowColor = '#FBBF24';
-    ctx.fillStyle = '#F59E0B';
+    // Lamp bulb
+    ctx.shadowColor = '#F97316';
+    ctx.fillStyle = '#FB923C';
     ctx.beginPath();
     ctx.ellipse(lamp.x + 20, lamp.y + 20, 18, 25, 0, 0, Math.PI * 2);
     ctx.fill();
-    
-    // Light rays
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)';
-    ctx.lineWidth = 2;
-    for (let i = 0; i < 8; i++) {
-      const angle = (i / 8) * Math.PI * 2;
-      const rayLength = 40 + Math.sin(time * 0.01 + i) * 10;
-      ctx.beginPath();
-      ctx.moveTo(lamp.x + 20, lamp.y + 20);
-      ctx.lineTo(
-        lamp.x + 20 + Math.cos(angle) * rayLength,
-        lamp.y + 20 + Math.sin(angle) * rayLength
-      );
-      ctx.stroke();
-    }
     
     ctx.restore();
   };
@@ -135,41 +134,39 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     ctx.save();
     
     if (obstacle.type === 'web') {
-      // Spider web with shimmer effect
       const shimmer = Math.sin(time * 0.008) * 0.3 + 0.7;
       ctx.strokeStyle = `rgba(156, 163, 175, ${shimmer})`;
-      ctx.lineWidth = 2;
-      ctx.shadowBlur = 10;
+      ctx.lineWidth = 3;
+      ctx.shadowBlur = 15;
       ctx.shadowColor = '#9CA3AF';
       
-      // Draw web pattern
-      for (let i = 0; i < 5; i++) {
+      // Enhanced web pattern
+      for (let i = 0; i < 6; i++) {
         ctx.beginPath();
-        ctx.moveTo(obstacle.x, obstacle.y + i * 10);
-        ctx.lineTo(obstacle.x + obstacle.width, obstacle.y + i * 10);
+        ctx.moveTo(obstacle.x, obstacle.y + i * 8);
+        ctx.lineTo(obstacle.x + obstacle.width, obstacle.y + i * 8);
         ctx.stroke();
       }
       
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 4; i++) {
         ctx.beginPath();
-        ctx.moveTo(obstacle.x + i * 15, obstacle.y);
-        ctx.lineTo(obstacle.x + i * 15, obstacle.y + obstacle.height);
+        ctx.moveTo(obstacle.x + i * 12, obstacle.y);
+        ctx.lineTo(obstacle.x + i * 12, obstacle.y + obstacle.height);
         ctx.stroke();
       }
     } else {
-      // Wind gust with particle effect
-      ctx.fillStyle = 'rgba(59, 130, 246, 0.6)';
-      ctx.shadowBlur = 15;
+      ctx.fillStyle = 'rgba(59, 130, 246, 0.8)';
+      ctx.shadowBlur = 20;
       ctx.shadowColor = '#3B82F6';
       
-      // Draw swirling wind pattern
-      for (let i = 0; i < 10; i++) {
-        const swirl = Math.sin(time * 0.01 + i) * 5;
+      // Enhanced wind pattern
+      for (let i = 0; i < 15; i++) {
+        const swirl = Math.sin(time * 0.01 + i) * 8;
         ctx.beginPath();
         ctx.arc(
-          obstacle.x + 10 + (i * 5) + swirl,
-          obstacle.y + 20 + Math.sin(time * 0.005 + i) * 10,
-          3, 0, Math.PI * 2
+          obstacle.x + 8 + (i * 4) + swirl,
+          obstacle.y + 15 + Math.sin(time * 0.005 + i) * 12,
+          4, 0, Math.PI * 2
         );
         ctx.fill();
       }
@@ -187,28 +184,43 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
 
     const state = gameStateRef.current;
     
-    // Clear canvas with fade effect
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.1)';
+    // Clear canvas with smooth gradient background
+    const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bgGradient.addColorStop(0, '#000000');
+    bgGradient.addColorStop(0.5, '#1C1917');
+    bgGradient.addColorStop(1, '#7C2D12');
+    ctx.fillStyle = bgGradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Update moth position based on input
+    // Update moth position
     const speed = 4;
     if (state.keys.up && state.moth.y > 0) state.moth.y -= speed;
     if (state.keys.down && state.moth.y < canvas.height - state.moth.height) state.moth.y += speed;
     if (state.keys.left && state.moth.x > 0) state.moth.x -= speed;
     if (state.keys.right && state.moth.x < canvas.width - state.moth.width) state.moth.x += speed;
     
-    // Spawn obstacles
-    if (currentTime - state.lastObstacleSpawn > 2000 - (level * 100)) {
+    // Continuous scoring
+    if (currentTime - state.lastScoreTime > 100) {
+      state.continuousScore += 1;
+      setScore(state.continuousScore);
+      state.lastScoreTime = currentTime;
+    }
+    
+    // Spawn more obstacles with higher frequency
+    if (currentTime - state.lastObstacleSpawn > Math.max(800 - (level * 50), 300)) {
       const obstacleType = Math.random() < 0.5 ? 'web' : 'wind';
-      state.obstacles.push({
-        x: canvas.width,
-        y: Math.random() * (canvas.height - 100) + 50,
-        width: obstacleType === 'web' ? 50 : 60,
-        height: obstacleType === 'web' ? 40 : 30,
-        speedX: -3 - (level * 0.5),
-        type: obstacleType
-      });
+      const numObstacles = Math.random() < 0.3 ? 2 : 1; // 30% chance for double obstacles
+      
+      for (let i = 0; i < numObstacles; i++) {
+        state.obstacles.push({
+          x: canvas.width + i * 100,
+          y: Math.random() * (canvas.height - 150) + 50,
+          width: obstacleType === 'web' ? 60 : 70,
+          height: obstacleType === 'web' ? 50 : 40,
+          speedX: -4 - (level * 0.8),
+          type: obstacleType
+        });
+      }
       state.lastObstacleSpawn = currentTime;
     }
     
@@ -218,60 +230,64 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
       return obstacle.x + obstacle.width > 0;
     });
     
-    // Check collisions with obstacles
+    // Check collisions
+    let isHit = false;
     if (state.invulnerable <= 0) {
       for (const obstacle of state.obstacles) {
         if (checkCollision(state.moth, obstacle)) {
+          // Deduct points on hit
+          state.continuousScore = Math.max(0, state.continuousScore - 50);
+          setScore(state.continuousScore);
+          
           setLives(prev => {
             const newLives = prev - 1;
             if (newLives <= 0) {
               setGameState('gameOver');
-              onScoreUpdate(score);
+              onScoreUpdate(state.continuousScore);
             }
             return newLives;
           });
-          state.invulnerable = 120; // 2 seconds of invulnerability
+          state.invulnerable = 120;
+          isHit = true;
           break;
         }
       }
     } else {
       state.invulnerable--;
+      isHit = state.invulnerable > 60; // Show hit effect for first half of invulnerability
     }
     
-    // Check if moth reached lamp
+    // Check lamp collision
     if (checkCollision(state.moth, state.lamp)) {
-      const levelBonus = level * 50;
-      const livesBonus = lives * 25;
-      const totalPoints = 100 + levelBonus + livesBonus;
-      
-      setScore(prev => prev + totalPoints);
+      const levelBonus = level * 100;
+      const livesBonus = lives * 50;
+      state.continuousScore += 200 + levelBonus + livesBonus;
+      setScore(state.continuousScore);
       setLevel(prev => prev + 1);
       
-      // Reset moth position
       state.moth.x = 50;
       state.moth.y = 250;
-      
-      // Clear obstacles for next level
       state.obstacles = [];
     }
     
     // Draw everything
-    drawMoth(ctx, state.moth, currentTime);
+    drawMoth(ctx, state.moth, currentTime, isHit);
     drawLamp(ctx, state.lamp, currentTime);
     
     state.obstacles.forEach(obstacle => {
       drawObstacle(ctx, obstacle, currentTime);
     });
     
-    // Draw UI
-    ctx.fillStyle = 'white';
+    // Draw UI with orange theme
+    ctx.fillStyle = '#FB923C';
     ctx.font = '20px Arial';
-    ctx.fillText(`Lives: ${lives}`, 20, 30);
-    ctx.fillText(`Score: ${score}`, 20, 60);
-    ctx.fillText(`Level: ${level}`, 20, 90);
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#FB923C';
+    ctx.fillText(`Score: ${state.continuousScore}`, 20, 30);
+    ctx.fillText(`Level: ${level}`, 20, 60);
     
     gameLoopRef.current = requestAnimationFrame(gameLoop);
-  }, [gameState, lives, score, level, onScoreUpdate]);
+  }, [gameState, lives, level, onScoreUpdate]);
 
   useEffect(() => {
     if (gameState === 'playing') {
@@ -297,7 +313,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
         case 's':
           state.keys.down = true;
           break;
-        case 'ar_left':
+        case 'arrowleft':
         case 'a':
           state.keys.left = true;
           break;
@@ -347,9 +363,9 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
   return (
     <div className="flex flex-col items-center space-y-6">
       <motion.h2 
-        className="text-4xl font-bold text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"
+        className="text-4xl font-bold text-center bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent"
         animate={{ 
-          filter: ['drop-shadow(0 0 10px rgba(168, 85, 247, 0.5))', 'drop-shadow(0 0 20px rgba(168, 85, 247, 0.8))', 'drop-shadow(0 0 10px rgba(168, 85, 247, 0.5))']
+          filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 20px rgba(249, 115, 22, 0.8))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
         }}
         transition={{ duration: 2, repeat: Infinity }}
       >
@@ -361,7 +377,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
           ref={canvasRef}
           width={800}
           height={500}
-          className="border border-purple-500/30 rounded-lg bg-gradient-to-br from-slate-900 to-purple-900/20"
+          className="border border-orange-500/30 rounded-lg shadow-2xl shadow-orange-500/20"
         />
         
         {gameState === 'menu' && (
@@ -369,13 +385,13 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
             <div className="text-center">
               <motion.button
                 onClick={startGame}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg shadow-purple-500/25"
+                className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg shadow-orange-500/25"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 🦋 Start Game
               </motion.button>
-              <p className="text-purple-200 mt-4 text-sm">
+              <p className="text-orange-200 mt-4 text-sm">
                 Use WASD or Arrow Keys to navigate the moth to the lamp!
               </p>
             </div>
@@ -386,10 +402,10 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
           <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm rounded-lg">
             <div className="text-center">
               <h3 className="text-3xl font-bold text-white mb-4">Game Over!</h3>
-              <p className="text-xl text-purple-200 mb-4">Final Score: {score}</p>
+              <p className="text-xl text-orange-200 mb-4">Final Score: {score}</p>
               <motion.button
                 onClick={startGame}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg shadow-purple-500/25"
+                className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg shadow-orange-500/25"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -404,9 +420,9 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
         {[...Array(3)].map((_, index) => (
           <motion.div
             key={index}
-            className={`text-2xl ${index < lives ? 'text-red-400' : 'text-gray-600'}`}
+            className={`text-3xl ${index < lives ? 'text-red-400' : 'text-gray-600'}`}
             animate={index < lives ? { 
-              filter: ['drop-shadow(0 0 5px rgba(248, 113, 113, 0.8))', 'drop-shadow(0 0 15px rgba(248, 113, 113, 1))', 'drop-shadow(0 0 5px rgba(248, 113, 113, 0.8))']
+              filter: ['drop-shadow(0 0 8px rgba(248, 113, 113, 0.8))', 'drop-shadow(0 0 16px rgba(248, 113, 113, 1))', 'drop-shadow(0 0 8px rgba(248, 113, 113, 0.8))']
             } : {}}
             transition={{ duration: 1, repeat: Infinity }}
           >

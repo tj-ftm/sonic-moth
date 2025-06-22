@@ -12,7 +12,6 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
   const handleConnect = async () => {
     setIsConnecting(true);
     
-    // Simulate wallet connection process
     setTimeout(() => {
       setIsConnecting(false);
       onConnect(true);
@@ -24,11 +23,11 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
       <motion.button
         onClick={handleConnect}
         disabled={isConnecting}
-        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-full text-lg shadow-lg shadow-purple-500/25 border border-purple-400/30 disabled:opacity-50 disabled:cursor-not-allowed"
-        whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(168, 85, 247, 0.5)' }}
+        className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-4 px-8 rounded-full text-lg shadow-lg shadow-orange-500/25 border border-orange-400/30 disabled:opacity-50 disabled:cursor-not-allowed"
+        whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
         whileTap={{ scale: 0.95 }}
         animate={isConnecting ? { 
-          boxShadow: ['0 0 20px rgba(168, 85, 247, 0.5)', '0 0 40px rgba(168, 85, 247, 0.8)', '0 0 20px rgba(168, 85, 247, 0.5)']
+          boxShadow: ['0 0 20px rgba(249, 115, 22, 0.5)', '0 0 40px rgba(249, 115, 22, 0.8)', '0 0 20px rgba(249, 115, 22, 0.5)']
         } : {}}
         transition={{ duration: 0.5, repeat: isConnecting ? Infinity : 0 }}
       >
@@ -45,7 +44,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
         )}
       </motion.button>
       
-      <p className="text-purple-300 mt-4 text-sm">
+      <p className="text-orange-300 mt-4 text-sm">
         Connect your Rabby Wallet to access the Sonic Network
       </p>
     </motion.div>

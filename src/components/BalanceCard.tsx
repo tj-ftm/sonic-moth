@@ -20,7 +20,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ title, balance, gradient }) =
         <motion.div
           className="text-3xl font-bold text-white"
           animate={{ 
-            textShadow: ['0 0 10px rgba(255, 255, 255, 0.5)', '0 0 20px rgba(255, 255, 255, 0.8)', '0 0 10px rgba(255, 255, 255, 0.5)']
+            textShadow: ['0 0 10px rgba(249, 115, 22, 0.5)', '0 0 20px rgba(249, 115, 22, 0.8)', '0 0 10px rgba(249, 115, 22, 0.5)']
           }}
           transition={{ duration: 2, repeat: Infinity }}
         >
