@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { getLeaderboard, LeaderboardScore } from '../lib/supabase';
 
 interface LeaderboardProps {
   walletAddress?: string;
@@ -13,122 +14,47 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ walletAddress, walletConnecte
     points: number;
     badge: string;
     isCurrentUser?: boolean;
+    isWalletScore?: boolean;
   }>>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get real leaderboard data from localStorage
-    const getRealLeaderboardData = () => {
-      const scores = [];
-      
-      // Get all stored scores from localStorage - show ALL scores regardless of wallet connection
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('mothScore_')) {
-          const identifier = key.replace('mothScore_', '');
-          const score = parseInt(localStorage.getItem(key) || '0');
-          
-          // Check if this is a wallet address or timestamp
-          let displayName = identifier;
-          let isWalletAddress = false;
-          
-          if (identifier.startsWith('0x') && identifier.length === 42) {
-            // This is a wallet address
-            isWalletAddress = true;
-            const walletDisplayName = localStorage.getItem(`mothWalletName_${identifier}`);
-            displayName = walletDisplayName || `${identifier.slice(0, 6)}...${identifier.slice(-4)}`;
-          } else {
-            // This is a timestamp-based entry, check for display name
-            const userName = localStorage.getItem(`mothUserName_${identifier}`);
-            displayName = userName || 'Anonymous';
-          }
-          
-          scores.push({
-            address: displayName,
-            points: score,
-            identifier: identifier,
-            isWalletAddress: isWalletAddress,
-            isCurrentUser: false // Will be set later
-          });
-        }
-      }
-      
-      // Add current user's score if available and not already in the list
-      const currentScore = parseInt(localStorage.getItem('currentMothScore') || '0');
-      if (currentScore > 0) {
-        let currentUserDisplayName = 'Anonymous';
-        let currentUserIdentifier = 'current';
-        let isCurrentWallet = false;
+    const fetchLeaderboard = async () => {
+      setLoading(true);
+      try {
+        const scores = await getLeaderboard(10);
         
-        if (walletConnected && walletAddress) {
-          // User is connected with wallet
-          currentUserIdentifier = walletAddress;
-          isCurrentWallet = true;
-          const walletDisplayName = localStorage.getItem(`mothWalletName_${walletAddress}`);
-          currentUserDisplayName = walletDisplayName || `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+        const formattedScores = scores.map((score: LeaderboardScore, index: number) => {
+          const displayName = score.display_name || 
+                            (score.wallet_address ? `${score.wallet_address.slice(0, 6)}...${score.wallet_address.slice(-4)}` : 'Anonymous');
           
-          // Check if this wallet already has a score recorded
-          const existingWalletScore = scores.find(s => s.identifier === walletAddress);
-          if (!existingWalletScore || existingWalletScore.points < currentScore) {
-            // Remove existing lower score for this wallet
-            if (existingWalletScore) {
-              const index = scores.indexOf(existingWalletScore);
-              scores.splice(index, 1);
-            }
-            
-            scores.push({
-              address: currentUserDisplayName,
-              points: currentScore,
-              identifier: currentUserIdentifier,
-              isWalletAddress: isCurrentWallet
-            });
-          }
-        } else {
-          // User is not connected, use display name
-          const currentUser = localStorage.getItem('mothUserName') || 'Anonymous';
-          currentUserDisplayName = currentUser;
-          
-          scores.push({
-            address: currentUserDisplayName,
-            points: currentScore,
-            identifier: currentUserIdentifier,
-            isWalletAddress: isCurrentWallet,
-            isCurrentUser: false // Will be set later
-          });
-        }
+          return {
+            rank: index + 1,
+            address: displayName,
+            points: score.score,
+            badge: index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '',
+            isCurrentUser: walletConnected && walletAddress && 
+                          score.wallet_address.toLowerCase() === walletAddress.toLowerCase(),
+            isWalletScore: score.wallet_address.startsWith('0x')
+          };
+        });
+        
+        setLeaderboardData(formattedScores);
+      } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+        // Fallback to empty state
+        setLeaderboardData([]);
+      } finally {
+        setLoading(false);
       }
-      
-      // If no real scores, add some sample data
-      if (scores.length === 0) {
-        scores.push(
-          { address: 'Anonymous Player', points: 0, identifier: 'sample1', isWalletAddress: false, isCurrentUser: false },
-          { address: 'Moth Master', points: 0, identifier: 'sample2', isWalletAddress: false, isCurrentUser: false },
-          { address: 'Light Seeker', points: 0, identifier: 'sample3', isWalletAddress: false, isCurrentUser: false }
-        );
-      }
-      
-      // Sort by points and add ranks, badges, and mark current user
-      const sortedScores = scores
-        .sort((a, b) => b.points - a.points)
-        .slice(0, 10) // Top 10
-        .map((score, index) => ({
-          rank: index + 1,
-          address: score.address,
-          points: score.points,
-          badge: index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '',
-          isCurrentUser: (walletConnected && walletAddress && score.identifier === walletAddress) || 
-                        (!walletConnected && score.identifier === 'current'),
-          isWalletScore: score.isWalletAddress // Add this to highlight wallet scores
-        }));
-      
-      return sortedScores;
     };
     
-    setLeaderboardData(getRealLeaderboardData());
+    fetchLeaderboard();
     
-    // Update leaderboard every 30 seconds
+    // Update leaderboard every 10 seconds
     const interval = setInterval(() => {
-      setLeaderboardData(getRealLeaderboardData());
-    }, 30000);
+      fetchLeaderboard();
+    }, 10000);
     
     return () => clearInterval(interval);
   }, [walletAddress, walletConnected]);
@@ -156,7 +82,12 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ walletAddress, walletConnecte
         </div>
 
         <div className="divide-y divide-orange-500/20 max-h-60 overflow-y-auto scrollbar-hide">
-          {leaderboardData.length > 0 ? (
+          {loading ? (
+            <div className="p-6 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400 mx-auto mb-2"></div>
+              <p className="text-orange-300">Loading leaderboard...</p>
+            </div>
+          ) : leaderboardData.length > 0 ? (
             leaderboardData.map((player, index) => (
               <motion.div
                 key={`${player.rank}-${player.address}`}
@@ -240,7 +171,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ walletAddress, walletConnecte
 
       <div className="mt-6 text-center">
         <p className="text-orange-300 text-sm">
-          Leaderboard updates every 30 seconds. Play Moth To The Lamp to climb the ranks! 
+          Leaderboard updates every 10 seconds. Play Moth To The Lamp to climb the ranks! 
           {walletConnected ? ' Your wallet scores are highlighted in blue!' : ' Connect a wallet to save your high scores!'} 
           Wallet scores are marked with 🔗 🦋
         </p>

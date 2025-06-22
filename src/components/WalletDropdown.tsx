@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { getUserProfile, createOrUpdateUserProfile, submitScore } from '../lib/supabase';
 
 interface WalletDropdownProps {
   walletConnected: boolean;
@@ -64,10 +65,22 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
               onWalletConnectWithAddress(true, accounts[0]);
             }
             updateBalances(accounts[0]);
+            loadUserProfile(accounts[0]);
           }
         });
     }
   }, [walletConnected]);
+  
+  const loadUserProfile = async (address: string) => {
+    try {
+      const profile = await getUserProfile(address);
+      if (profile && profile.display_name) {
+        setUserName(profile.display_name);
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  };
 
   const updateBalances = async (address: string) => {
     try {
@@ -187,12 +200,15 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
           const pendingPlayerName = localStorage.getItem('pendingPlayerName');
           
           if (pendingScore) {
-            localStorage.setItem(`mothScore_${accounts[0]}`, pendingScore);
-            localStorage.setItem('currentMothScore', pendingScore);
+            // Submit score to Supabase
+            await submitScore(
+              accounts[0],
+              parseInt(pendingScore),
+              pendingPlayerName || '',
+              Date.now().toString()
+            );
             
-            if (pendingPlayerName) {
-              localStorage.setItem(`mothWalletName_${accounts[0]}`, pendingPlayerName);
-            }
+            localStorage.setItem('currentMothScore', pendingScore);
             
             // Clean up pending data
             localStorage.removeItem('pendingScore');
@@ -261,10 +277,12 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
       e.preventDefault();
       e.stopPropagation();
     }
-    localStorage.setItem('mothUserName', userName);
+    
     // Also save wallet-specific display name if connected
     if (walletConnected && walletAddress) {
-      localStorage.setItem(`mothWalletName_${walletAddress}`, userName);
+      await createOrUpdateUserProfile(walletAddress, userName);
+    } else {
+      localStorage.setItem('mothUserName', userName);
     }
     setIsEditingName(false);
   };
@@ -386,7 +404,7 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
                       type="text"
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
-                      className={`flex-1 px-3 py-2 bg-black/50 border border-orange-500/30 rounded-lg text-white ${isMobile ? 'text-xs' : 'text-sm'} focus:outline-none focus:border-orange-500`}
+                      className={`flex-1 px-3 py-2 bg-black/50 border border-orange-500/30 rounded-lg text-white ${isMobile ? 'text-xs' : 'text-sm'} focus:outline-none focus:border-orange-500 selectable`}
                       placeholder="Enter display name"
                     />
                     <button

@@ -46,6 +46,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
   const [finalScore, setFinalScore] = useState(0);
   const [showWalletPrompt, setShowWalletPrompt] = useState(false);
   const [tempPlayerName, setTempPlayerName] = useState('');
+  const [currentScore, setCurrentScore] = useState(0);
 
   const gameStateRef = useRef({
     moth: { x: 100, y: 250, width: 50, height: 35, velocityY: 0 },
@@ -65,6 +66,19 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
+    
+    // Real-time score update effect
+    useEffect(() => {
+      const interval = setInterval(() => {
+        if (gameState === 'playing') {
+          const state = gameStateRef.current;
+          setCurrentScore(state.continuousScore);
+          onScoreUpdate(state.continuousScore);
+        }
+      }, 50); // Update every 50ms for smooth real-time updates
+      
+      return () => clearInterval(interval);
+    }, [gameState, onScoreUpdate]);
     
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -201,10 +215,10 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
     const glowIntensity = 30 + Math.sin(time * 0.003) * 10;
     const canvas = ctx.canvas;
     
-    // Adjust sun position for mobile
-    const sunX = isMobile ? canvas.width - 80 : 800;
-    const sunY = isMobile ? canvas.height / 2 : 250;
-    const sunRadius = isMobile ? 120 : 200;
+    // Center the sun on the right side for both mobile and desktop
+    const sunX = canvas.width - (isMobile ? 60 : 100);
+    const sunY = canvas.height / 2;
+    const sunRadius = isMobile ? 80 : 150;
     
     // Create radial gradient for sun effect
     const gradient = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius);
@@ -214,11 +228,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
     gradient.addColorStop(1, 'rgba(255, 69, 0, 0)');
     
     ctx.fillStyle = gradient;
-    if (isMobile) {
-      ctx.fillRect(canvas.width - 160, 0, 160, canvas.height);
-    } else {
-      ctx.fillRect(600, 50, 400, 400);
-    }
+    ctx.fillRect(sunX - sunRadius, sunY - sunRadius, sunRadius * 2, sunRadius * 2);
     
     // Add sun rays
     ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
@@ -243,26 +253,31 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
     ctx.restore();
   };
 
+  const drawLampImage = new Image();
+  drawLampImage.src = '/src/assets/—Pngtree—vector lamp icon_4091194.png';
+
   const drawObstacle = (ctx: CanvasRenderingContext2D, obstacle: Obstacle, time: number) => {
     ctx.save();
     
-    // Red glowing rotating wind obstacle
+    // Draw lamp with glow effect
     const rotation = time * 0.005;
     ctx.translate(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2);
     ctx.rotate(rotation);
     
-    ctx.fillStyle = 'rgba(220, 38, 38, 0.9)'; // Red color
-    ctx.shadowBlur = 25; // Increased glow
-    ctx.shadowColor = '#DC2626'; // Red glow
+    // Add glow effect
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = '#FFD700';
+    ctx.globalAlpha = 0.8;
     
-    // Draw rotating spiral pattern
-    for (let i = 0; i < 6; i++) {
-      const angle = (i * Math.PI * 2) / 6;
-      const x = Math.cos(angle) * 20;
-      const y = Math.sin(angle) * 20;
-      
+    // Draw lamp image if loaded, otherwise fallback to circle
+    if (drawLampImage.complete && drawLampImage.naturalHeight !== 0) {
+      const size = obstacle.width * 0.8; // Make lamp smaller
+      ctx.drawImage(drawLampImage, -size/2, -size/2, size, size);
+    } else {
+      // Fallback: golden glowing circle
+      ctx.fillStyle = '#FFD700';
       ctx.beginPath();
-      ctx.arc(x, y, 8, 0, Math.PI * 2);
+      ctx.arc(0, 0, obstacle.width * 0.3, 0, Math.PI * 2);
       ctx.fill();
     }
     
@@ -443,8 +458,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
         state.obstacles.push({
           x: canvas.width + i * 120,
           y: Math.random() * (canvas.height - 100) + 50,
-          width: 42, // 70% of 60
-          height: 42, // 70% of 60
+          width: 30, // Made smaller
+          height: 30, // Made smaller
           speedX: -4,
           type: 'wind'
         });
@@ -791,7 +806,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
         <motion.canvas
           ref={canvasRef}
           width={isMobile ? 350 : 800}
-          height={isMobile ? 450 : 500}
+          height={isMobile ? 600 : 500}
           className={`border border-orange-500/30 rounded-lg shadow-2xl shadow-orange-500/20 ${isMobile ? 'w-full max-w-sm' : ''}`}
           animate={isShaking ? { 
             x: [0, -5, 5, -5, 5, 0],
@@ -799,6 +814,33 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
           } : {}}
           transition={{ duration: 0.2 }}
         />
+        
+        {/* Lives and Score Panel - Outside Canvas */}
+        {gameState === 'playing' && (
+          <div className={`absolute top-0 left-0 right-0 bg-black/60 backdrop-blur-sm border-b border-orange-500/30 ${isMobile ? 'p-2' : 'p-4'}`}>
+            <div className="flex justify-between items-center">
+              {/* Lives */}
+              <div className="flex items-center space-x-2">
+                <span className={`text-orange-200 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Lives:</span>
+                <div className="flex space-x-1">
+                  {[...Array(3)].map((_, i) => (
+                    <span key={i} className={`${isMobile ? 'text-sm' : 'text-lg'}`}>
+                      {i < lives ? '❤️' : '🖤'}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Score */}
+              <div className="flex items-center space-x-2">
+                <span className={`text-orange-200 ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Score:</span>
+                <span className={`text-white font-bold ${isMobile ? 'text-sm' : 'text-lg'}`}>
+                  {currentScore.toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Mobile Touch Control Indicators */}
         
@@ -961,7 +1003,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                       value={tempPlayerName}
                       onChange={(e) => setTempPlayerName(e.target.value)}
                       placeholder="Your display name"
-                      className="w-full px-3 py-2 bg-black/50 border border-orange-500/30 rounded-lg text-white text-sm focus:outline-none focus:border-orange-500"
+                      className="w-full px-3 py-2 bg-black/50 border border-orange-500/30 rounded-lg text-white text-sm focus:outline-none focus:border-orange-500 selectable"
                       maxLength={20}
                     />
                   </div>

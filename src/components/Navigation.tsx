@@ -82,9 +82,7 @@ const Navigation: React.FC<NavigationProps> = ({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <div className="w-5 h-0.5 bg-orange-400 rounded"></div>
-              <div className="w-5 h-0.5 bg-orange-400 rounded"></div>
-              <div className="w-5 h-0.5 bg-orange-400 rounded"></div>
+              <span className="text-2xl">🦋</span>
             </motion.button>
             
             {/* Sliding Menu from Right */}
