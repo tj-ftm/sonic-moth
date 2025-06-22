@@ -219,7 +219,7 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
     return (
       <motion.button
         onClick={handleConnect}
-        className={`bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-6 text-sm'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 ml-2`}
+        className={`w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-4 text-sm' : 'py-3 px-6 text-sm'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30`}
         whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(249, 115, 22, 0.5)' }}
         whileTap={{ scale: 0.95 }}
       >
@@ -235,7 +235,7 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
     <div className="relative ml-2">
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className={`bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-6 text-sm'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30`}
+        className={`w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold ${isMobile ? 'py-3 px-4 text-sm' : 'py-3 px-6 text-sm'} rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30`}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >

@@ -45,34 +45,44 @@ const Navigation: React.FC<NavigationProps> = ({
     return (
       <nav className="relative z-20 p-2">
         <div className="container mx-auto">
-          <div className="flex justify-center items-center">
-            {/* Mobile Menu Button */}
+          <div className="flex justify-between items-center">
+            {/* Moth Survival Title */}
+            <motion.h2 
+              className="text-xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent"
+              animate={{ 
+                filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.7))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
+              }}
+              transition={{ duration: 3, repeat: Infinity }}
+            >
+              Moth Survival
+            </motion.h2>
+            
+            {/* Mobile Menu Button - Three Lines Only */}
             <motion.button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="bg-black/20 backdrop-blur-md rounded-full p-3 border border-orange-500/30"
+              className="bg-black/20 backdrop-blur-md rounded-full p-3 border border-orange-500/30 flex flex-col justify-center items-center space-y-1"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <div className="flex items-center space-x-2">
-                <span className="text-orange-400">☰</span>
-                <span className="text-orange-200 text-sm">Menu</span>
-              </div>
+              <div className="w-5 h-0.5 bg-orange-400 rounded"></div>
+              <div className="w-5 h-0.5 bg-orange-400 rounded"></div>
+              <div className="w-5 h-0.5 bg-orange-400 rounded"></div>
             </motion.button>
             
-            {/* Sliding Menu */}
+            {/* Sliding Menu from Right */}
             <motion.div
-              initial={{ x: '-100%', opacity: 0 }}
+              initial={{ x: '100%', opacity: 0 }}
               animate={{ 
-                x: isMenuOpen ? 0 : '-100%', 
+                x: isMenuOpen ? 0 : '100%', 
                 opacity: isMenuOpen ? 1 : 0 
               }}
               transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="fixed left-0 top-0 h-full w-64 bg-gradient-to-br from-black via-gray-900 to-orange-900 border-r border-orange-500/30 backdrop-blur-md z-50"
+              className="fixed right-0 top-0 h-full w-64 bg-gradient-to-br from-black via-gray-900 to-orange-900 border-l border-orange-500/30 backdrop-blur-md z-50"
             >
               <div className="p-4 space-y-4">
                 {/* Close Button */}
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-orange-200 font-semibold">Menu</h3>
+                  <h3 className="text-orange-200 font-semibold text-lg">Menu</h3>
                   <motion.button
                     onClick={() => setIsMenuOpen(false)}
                     className="text-orange-300 hover:text-orange-200 text-xl"
@@ -89,7 +99,7 @@ const Navigation: React.FC<NavigationProps> = ({
                     setActiveTab('home');
                     setIsMenuOpen(false);
                   }}
-                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-orange-500/25 flex items-center space-x-2"
+                  className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 flex items-center space-x-2"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -104,7 +114,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       onShowAbout();
                       setIsMenuOpen(false);
                     }}
-                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-orange-500/25 flex items-center space-x-2"
+                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 flex items-center space-x-2"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -120,7 +130,7 @@ const Navigation: React.FC<NavigationProps> = ({
                       onShowLeaderboard();
                       setIsMenuOpen(false);
                     }}
-                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-orange-500/25 flex items-center space-x-2"
+                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-4 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30 flex items-center space-x-2"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -131,12 +141,14 @@ const Navigation: React.FC<NavigationProps> = ({
                 
                 {/* Wallet Section */}
                 <div className="pt-4 border-t border-orange-500/30">
-                  <WalletDropdown
-                    walletConnected={walletConnected}
-                    balances={balances}
-                    userPoints={userPoints}
-                    onWalletConnect={onWalletConnect}
-                  />
+                  <div className="w-full">
+                    <WalletDropdown
+                      walletConnected={walletConnected}
+                      balances={balances}
+                      userPoints={userPoints}
+                      onWalletConnect={onWalletConnect}
+                    />
+                  </div>
                 </div>
               </div>
             </motion.div>

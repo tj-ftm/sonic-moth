@@ -71,15 +71,18 @@ const Index = () => {
                 transition={{ duration: 0.5 }}
                 className="relative"
               >
-                <motion.h2 
-                  className="text-2xl md:text-4xl font-bold text-center bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent mb-6"
-                  animate={{ 
-                    filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.7))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
-                  }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                >
-                  Moth Survival
-                </motion.h2>
+                {/* Only show title on desktop, mobile has it in navigation */}
+                <div className="hidden md:block">
+                  <motion.h2 
+                    className="text-4xl font-bold text-center bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent mb-6"
+                    animate={{ 
+                      filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.7))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
+                    }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                  >
+                    Moth Survival
+                  </motion.h2>
+                </div>
                 
                 <MothGame onScoreUpdate={handleScoreUpdate} />
                 
