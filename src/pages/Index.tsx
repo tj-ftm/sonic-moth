@@ -12,6 +12,7 @@ const Index = () => {
   const [walletConnected, setWalletConnected] = useState(false);
   const [userPoints, setUserPoints] = useState(0);
   const [balances, setBalances] = useState({ sonic: '0.00', moth: '0.00' });
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   // Handle score updates and save to localStorage
   const handleScoreUpdate = (points: number) => {
@@ -65,8 +66,66 @@ const Index = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.5 }}
+                className="relative"
               >
+                <div className="flex items-center justify-center space-x-4 mb-6">
+                  <motion.h2 
+                    className="text-2xl md:text-4xl font-bold text-center bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent"
+                    animate={{ 
+                      filter: ['drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))', 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.7))', 'drop-shadow(0 0 10px rgba(249, 115, 22, 0.5))']
+                    }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                  >
+                    Moth Survival
+                  </motion.h2>
+                  
+                  <motion.button
+                    onClick={() => setShowLeaderboard(true)}
+                    className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-2 px-4 rounded-full text-sm shadow-lg shadow-orange-500/25 border border-orange-400/30"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    🏆 Leaderboard
+                  </motion.button>
+                </div>
+                
                 <MothGame onScoreUpdate={handleScoreUpdate} />
+                
+                {/* Hovering Leaderboard Modal */}
+                <AnimatePresence>
+                  {showLeaderboard && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                      onClick={() => setShowLeaderboard(false)}
+                    >
+                      <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        className="bg-gradient-to-br from-black via-gray-900 to-orange-900 rounded-2xl border border-orange-500/30 p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex justify-between items-center mb-6">
+                          <h2 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
+                            🏆 Leaderboard
+                          </h2>
+                          <motion.button
+                            onClick={() => setShowLeaderboard(false)}
+                            className="text-orange-300 hover:text-orange-200 text-2xl"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            ✕
+                          </motion.button>
+                        </div>
+                        <Leaderboard />
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             )}
 
