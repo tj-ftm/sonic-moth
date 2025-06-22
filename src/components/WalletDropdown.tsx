@@ -179,6 +179,24 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
         if (accounts.length > 0) {
           await checkAndSwitchNetwork(window.ethereum);
           setWalletAddress(accounts[0]);
+          
+          // Check for pending score from game over screen
+          const pendingScore = localStorage.getItem('pendingScore');
+          const pendingPlayerName = localStorage.getItem('pendingPlayerName');
+          
+          if (pendingScore) {
+            localStorage.setItem(`mothScore_${accounts[0]}`, pendingScore);
+            localStorage.setItem('currentMothScore', pendingScore);
+            
+            if (pendingPlayerName) {
+              localStorage.setItem(`mothWalletName_${accounts[0]}`, pendingPlayerName);
+            }
+            
+            // Clean up pending data
+            localStorage.removeItem('pendingScore');
+            localStorage.removeItem('pendingPlayerName');
+          }
+          
           if (onWalletConnectWithAddress) {
             onWalletConnectWithAddress(true, accounts[0]);
           }

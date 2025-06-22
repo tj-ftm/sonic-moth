@@ -233,7 +233,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ walletAddress, walletConnecte
 
       <div className="mt-6 text-center">
         <p className="text-orange-300 text-sm">
-          Leaderboard updates every 30 seconds. {walletConnected ? 'Your wallet scores are highlighted!' : 'Connect a wallet to save your high scores!'} 🦋
+          Leaderboard updates every 30 seconds. Play Moth To The Lamp to climb the ranks! {walletConnected ? 'Your wallet scores are highlighted!' : 'Connect a wallet to save your high scores!'} 🦋
         </p>
       </div>
     </div>

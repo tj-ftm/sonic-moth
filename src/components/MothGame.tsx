@@ -497,6 +497,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
               if (walletConnected && walletAddress) {
                 // Save with wallet address
                 localStorage.setItem(`mothScore_${walletAddress}`, state.continuousScore.toString());
+                // Also save the current score for immediate display
+                localStorage.setItem('currentMothScore', state.continuousScore.toString());
                 onScoreUpdate(state.continuousScore);
               } else {
                 // Show wallet prompt for non-connected users
@@ -673,18 +675,38 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
 
   const handleSaveWithName = () => {
     const timestamp = Date.now();
-    const scoreKey = `mothScore_${timestamp}`;
-    localStorage.setItem(scoreKey, finalScore.toString());
     
-    if (tempPlayerName.trim()) {
-      localStorage.setItem(`mothUserName_${timestamp}`, tempPlayerName.trim());
+    if (walletConnected && walletAddress) {
+      // Save with wallet address if connected
+      localStorage.setItem(`mothScore_${walletAddress}`, finalScore.toString());
+      if (tempPlayerName.trim()) {
+        localStorage.setItem(`mothWalletName_${walletAddress}`, tempPlayerName.trim());
+      }
+    } else {
+      // Save with timestamp if not connected
+      const scoreKey = `mothScore_${timestamp}`;
+      localStorage.setItem(scoreKey, finalScore.toString());
+      if (tempPlayerName.trim()) {
+        localStorage.setItem(`mothUserName_${timestamp}`, tempPlayerName.trim());
+      }
     }
+    
+    // Always save current score
+    localStorage.setItem('currentMothScore', finalScore.toString());
     
     setShowWalletPrompt(false);
     setTempPlayerName('');
   };
 
   const handleConnectWallet = () => {
+    // Save score with wallet when connecting
+    if (finalScore > 0) {
+      localStorage.setItem('pendingScore', finalScore.toString());
+      if (tempPlayerName.trim()) {
+        localStorage.setItem('pendingPlayerName', tempPlayerName.trim());
+      }
+    }
+    
     if (onWalletConnect) {
       onWalletConnect(true);
     }

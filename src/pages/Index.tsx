@@ -111,7 +111,7 @@ const Index = () => {
                     }}
                     transition={{ duration: 3, repeat: Infinity }}
                   >
-                    Moth Survival
+                    Moth To The Lamp
                   </motion.h2>
                 </div>
                 
@@ -189,9 +189,9 @@ const Index = () => {
                         
                         <div className="space-y-6 text-orange-200">
                           <p className="text-lg leading-relaxed">
-                            Welcome to the $MOTH ecosystem on Sonic Network - where digital moths navigate through 
-                            the luminous realm of decentralized gaming. Our platform combines the thrill of 
-                            blockchain technology with engaging survival gameplay mechanics.
+                            Welcome to Moth To The Lamp - where digital moths are irresistibly drawn to the 
+                            luminous realm of decentralized gaming on Sonic Network. Navigate through dangerous 
+                            obstacles as you're pulled toward the eternal light.
                           </p>
                           <div className="grid md:grid-cols-2 gap-6">
                             <div className="bg-orange-800/20 rounded-xl p-6 border border-orange-400/20">
@@ -206,7 +206,7 @@ const Index = () => {
                             <div className="bg-red-800/20 rounded-xl p-6 border border-red-400/20">
                               <h3 className="text-xl font-semibold text-white mb-3">Game Info</h3>
                               <ul className="space-y-2 text-sm">
-                                <li><strong>Objective:</strong> Survival</li>
+                                <li><strong>Objective:</strong> Reach the lamp</li>
                                 <li><strong>Scoring:</strong> Time-based + Bonuses</li>
                                 <li><strong>Penalties:</strong> -10 points per hit</li>
                                 <li><strong>Bonuses:</strong> +10 points per obstacle destroyed</li>

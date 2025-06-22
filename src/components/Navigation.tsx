@@ -60,7 +60,7 @@ const Navigation: React.FC<NavigationProps> = ({
               }}
               transition={{ duration: 3, repeat: Infinity }}
             >
-              Moth Survival
+              Moth To The Lamp
             </motion.h2>
             
             {/* Mobile Menu Button - Three Lines Only */}
