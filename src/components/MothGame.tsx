@@ -65,6 +65,30 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Mobile touch control handlers
+  const handleMobileUp = () => {
+    const state = gameStateRef.current;
+    state.keys.up = true;
+    setTimeout(() => {
+      state.keys.up = false;
+    }, 100);
+  };
+
+  const handleMobileDown = () => {
+    const state = gameStateRef.current;
+    state.keys.down = true;
+    setTimeout(() => {
+      state.keys.down = false;
+    }, 100);
+  };
+
+  const handleMobileShoot = () => {
+    const state = gameStateRef.current;
+    state.keys.space = true;
+    setTimeout(() => {
+      state.keys.space = false;
+    }, 100);
+  };
   const resetGame = () => {
     const newLives = 3;
     setLives(newLives);
@@ -570,6 +594,47 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
           transition={{ duration: 0.2 }}
         />
         
+        {/* Mobile Touch Controls */}
+        {isMobile && gameState === 'playing' && (
+          <div className="absolute inset-0 pointer-events-none">
+            {/* Up Arrow */}
+            <motion.button
+              onTouchStart={(e) => {
+                e.preventDefault();
+                handleMobileUp();
+              }}
+              className="absolute top-4 right-4 bg-orange-600/80 hover:bg-orange-700/80 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg border border-orange-400/50 pointer-events-auto"
+              whileTap={{ scale: 0.9 }}
+            >
+              <span className="text-xl">↑</span>
+            </motion.button>
+            
+            {/* Down Arrow */}
+            <motion.button
+              onTouchStart={(e) => {
+                e.preventDefault();
+                handleMobileDown();
+              }}
+              className="absolute top-20 right-4 bg-orange-600/80 hover:bg-orange-700/80 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg border border-orange-400/50 pointer-events-auto"
+              whileTap={{ scale: 0.9 }}
+            >
+              <span className="text-xl">↓</span>
+            </motion.button>
+            
+            {/* Shoot Button */}
+            <motion.button
+              onTouchStart={(e) => {
+                e.preventDefault();
+                handleMobileShoot();
+              }}
+              className="absolute bottom-4 right-4 bg-yellow-600/80 hover:bg-yellow-700/80 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg border border-yellow-400/50 pointer-events-auto"
+              whileTap={{ scale: 0.9 }}
+            >
+              <span className="text-xl">💫</span>
+            </motion.button>
+          </div>
+        )}
+        
         {gameState === 'menu' && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-lg">
             <div className="text-center p-6">
@@ -603,8 +668,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate }) => {
                   <p className="text-orange-200 font-medium mb-2">Controls:</p>
                   {isMobile ? (
                     <div className="space-y-1 text-orange-300">
-                      <p>• Touch left side: Move up/down</p>
-                      <p>• Touch right side: Shoot light</p>
+                      <p>• Use arrow buttons to move up/down</p>
+                      <p>• Use 💫 button to shoot light</p>
                     </div>
                   ) : (
                     <div className="space-y-1 text-orange-300">
