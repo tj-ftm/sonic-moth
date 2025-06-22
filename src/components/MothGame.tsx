@@ -553,7 +553,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
   useEffect(() => {
     let isDragging = false;
     let lastTouchY = 0;
-    let touchSensitivity = 3; // Increased sensitivity multiplier
     
     const handleKeyDown = (e: KeyboardEvent) => {
       const state = gameStateRef.current;
@@ -599,7 +598,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
       
       e.preventDefault();
       const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
       const touch = e.touches[0];
       const x = touch.clientX - rect.left;
       const y = touch.clientY - rect.top;
@@ -607,7 +605,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
       const state = gameStateRef.current;
       
       // Right side of screen for shooting
-      if (x > rect.width / 2) {
+      if (x > canvas.width / 2) {
         state.keys.space = true;
       } else {
         // Left side for drag movement
@@ -625,21 +623,19 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
       e.preventDefault();
       const rect = canvas.getBoundingClientRect();
       const touch = e.touches[0];
+      const x = touch.clientX - rect.left;
       const y = touch.clientY - rect.top;
       
-      if (isDragging) {
-        const deltaY = (y - lastTouchY) * touchSensitivity;
+      // Only handle movement on left side
+      if (x <= canvas.width / 2) {
+        const deltaY = y - lastTouchY;
         const state = gameStateRef.current;
         
         // Move moth based on drag direction
-        if (deltaY < -2) { // More sensitive - dragging up
+        if (deltaY < -5) { // Dragging up
           state.keys.up = true;
           state.keys.down = false;
-        } else if (deltaY > 2) { // More sensitive - dragging down
-          state.keys.down = true;
-          state.keys.up = false;
-        } else if (Math.abs(deltaY) > 8) { // Large movements
-          // Handle large movements more aggressively
+        } else if (deltaY > 5) { // Dragging down
           state.keys.down = true;
           state.keys.up = false;
         } else {
@@ -647,8 +643,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
           state.keys.down = false;
         }
         
+        lastTouchY = y;
       }
-      lastTouchY = y;
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
@@ -662,23 +658,11 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
       state.keys.space = false;
     };
 
-    // Prevent default touch behaviors that might interfere
-    const preventDefaultTouch = (e: TouchEvent) => {
-      if (e.target === canvas) {
-        e.preventDefault();
-      }
-    };
-
-    // Add passive: false to ensure preventDefault works
-    const touchOptions = { passive: false };
-
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
-    window.addEventListener('touchstart', handleTouchStart, touchOptions);
-    window.addEventListener('touchmove', handleTouchMove, touchOptions);
-    window.addEventListener('touchend', handleTouchEnd, touchOptions);
-    window.addEventListener('touchstart', preventDefaultTouch, touchOptions);
-    window.addEventListener('touchmove', preventDefaultTouch, touchOptions);
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('touchend', handleTouchEnd);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
@@ -686,8 +670,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
-      window.removeEventListener('touchstart', preventDefaultTouch);
-      window.removeEventListener('touchmove', preventDefaultTouch);
     };
   }, [isMobile, gameState]);
 
@@ -750,12 +732,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
             y: [0, -2, 2, -2, 2, 0]
           } : {}}
           transition={{ duration: 0.2 }}
-          style={{
-            touchAction: 'none',
-            WebkitTouchCallout: 'none',
-            WebkitUserSelect: 'none',
-            userSelect: 'none'
-          }}
         />
         
         {/* Mobile Touch Control Indicators */}
@@ -791,6 +767,11 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                 onTouchStart={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  startGame();
                 }}
               >
                 <div className="flex items-center space-x-2">
@@ -858,12 +839,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                     }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onTouchEnd={(e) => {
-                      e.stopPropagation();
-                      setGameState('menu');
-                      resetGame();
-                    }}
                   >
                     <div className="flex items-center space-x-2">
                       <span>🦋</span>
@@ -882,11 +857,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                     }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onTouchEnd={(e) => {
-                      e.stopPropagation();
-                      startGame();
-                    }}
                   >
                     <div className="flex items-center space-x-2">
                       <span>🚀</span>
@@ -943,11 +913,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                       }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onTouchStart={(e) => e.stopPropagation()}
-                      onTouchEnd={(e) => {
-                        e.stopPropagation();
-                        handleConnectWallet();
-                      }}
                     >
                       <div className="flex items-center justify-center space-x-2">
                         <span>🐰</span>
@@ -966,11 +931,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                       }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onTouchStart={(e) => e.stopPropagation()}
-                      onTouchEnd={(e) => {
-                        e.stopPropagation();
-                        handleSaveWithName();
-                      }}
                     >
                       Save Without Wallet
                     </motion.button>
@@ -986,11 +946,6 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
                         padding: '12px'
                       }}
                       whileHover={{ scale: 1.05 }}
-                      onTouchStart={(e) => e.stopPropagation()}
-                      onTouchEnd={(e) => {
-                        e.stopPropagation();
-                        setShowWalletPrompt(false);
-                      }}
                     >
                       Skip
                     </motion.button>
