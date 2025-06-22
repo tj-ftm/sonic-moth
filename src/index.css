@@ -178,6 +178,7 @@ button,
     user-select: text;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
   }
+  }
   
   /* Ensure canvas is touchable */
   canvas {
