@@ -93,7 +93,6 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ walletAddress, walletConnecte
             identifier: currentUserIdentifier,
             isWalletAddress: isCurrentWallet,
             isCurrentUser: false // Will be set later
-            isCurrentUser: false // Will be set later
           });
         }
       }
