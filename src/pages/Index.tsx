@@ -111,7 +111,7 @@ const Index = () => {
                     }}
                     transition={{ duration: 3, repeat: Infinity }}
                   >
-                    Moth To The Lamp
+                    Moth VS Lamp
                   </motion.h2>
                 </div>
                 
