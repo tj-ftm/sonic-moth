@@ -693,7 +693,8 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
 
     // Prevent default touch behaviors that might interfere
     const preventDefaultTouch = (e: TouchEvent) => {
-      if (e.target === canvas) {
+      const canvas = canvasRef.current;
+      if (canvas && e.target === canvas) {
         e.preventDefault();
       }
     };
