@@ -11,6 +11,7 @@ interface NavigationProps {
   userPoints: number;
   onWalletConnect: (connected: boolean) => void;
   onShowLeaderboard?: () => void;
+  onShowAbout?: () => void;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ 
@@ -20,7 +21,8 @@ const Navigation: React.FC<NavigationProps> = ({
   balances, 
   userPoints, 
   onWalletConnect,
-  onShowLeaderboard
+  onShowLeaderboard,
+  onShowAbout
 }) => {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -35,8 +37,7 @@ const Navigation: React.FC<NavigationProps> = ({
   }, []);
 
   const tabs = [
-    { id: 'home', label: 'Home', icon: '🦋' },
-    { id: 'about', label: 'About', icon: 'ℹ️' }
+    { id: 'home', label: 'Home', icon: '🦋' }
   ];
 
   return (
@@ -58,10 +59,22 @@ const Navigation: React.FC<NavigationProps> = ({
                   whileTap={{ scale: 0.95 }}
                 >
                   <span className={isMobile ? 'mr-1' : 'mr-2'}>{tab.icon}</span>
-                  {isMobile ? (tab.id === 'home' ? 'Home' : tab.id === 'leaderboard' ? 'Board' : 'Info') : tab.label}
-                  {isMobile ? (tab.id === 'home' ? 'Home' : 'Info') : tab.label}
+                  {tab.label}
                 </motion.button>
               ))}
+              
+              {/* About Button */}
+              {activeTab === 'home' && onShowAbout && (
+                <motion.button
+                  onClick={onShowAbout}
+                  className={`${isMobile ? 'px-3 py-2 text-xs' : 'px-6 py-3 text-sm'} rounded-full font-medium transition-all duration-300 text-orange-200 hover:text-white hover:bg-orange-800/30`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className={isMobile ? 'mr-1' : 'mr-2'}>ℹ️</span>
+                  {isMobile ? 'Info' : 'About'}
+                </motion.button>
+              )}
               
               {/* Leaderboard Button */}
               {activeTab === 'home' && onShowLeaderboard && (
