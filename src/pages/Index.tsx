@@ -237,7 +237,7 @@ const Index = () => {
                             </motion.a>
                             
                             <motion.a
-                              href="https://dexscreener.com/sonic/0x8d5eb12a3701d8c54a1b7c4de7ceca84b778da21"
+                            href="https://dexscreener.com/sonic/0x8d5eb12a3701d8c54a1b7c4de7ceca84b778da21"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg shadow-orange-500/25 border border-orange-400/30"
