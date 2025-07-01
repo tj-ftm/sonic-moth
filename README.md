@@ -1,73 +1,129 @@
-# Welcome to your Lovable project
+# Moth VS Lamp - Google IDX & Firebase Edition
 
-## Project info
+A survival game built with React, TypeScript, and Firebase, optimized for Google IDX development environment.
 
-**URL**: https://lovable.dev/projects/444f516a-3a5b-423c-93ad-7accb316a1ed
+## 🚀 Getting Started with Google IDX
 
-## How can I edit this code?
+This project is configured to work seamlessly with Google IDX. Simply open the project in IDX and it will automatically:
 
-There are several ways of editing your application.
+- Install all dependencies
+- Set up the development environment
+- Configure Firebase emulators
+- Start the development server
 
-**Use Lovable**
+## 🔧 Setup Instructions
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/444f516a-3a5b-423c-93ad-7accb316a1ed) and start prompting.
+### 1. Firebase Configuration
 
-Changes made via Lovable will be committed automatically to this repo.
+1. Create a new Firebase project at [Firebase Console](https://console.firebase.google.com)
+2. Enable Firestore Database
+3. Enable Authentication (optional)
+4. Copy your Firebase config and create a `.env` file:
 
-**Use your preferred IDE**
+```bash
+cp .env.example .env
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Fill in your Firebase configuration values in the `.env` file.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 2. Firebase Emulators (Development)
 
-Follow these steps:
+For local development, the project uses Firebase emulators:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+```bash
+# Start emulators
+npm run firebase:emulators
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# In another terminal, start the dev server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### 3. Production Deployment
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+# Build the project
+npm run build
 
-**Use GitHub Codespaces**
+# Deploy to Firebase Hosting
+npm run firebase:deploy:hosting
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Deploy functions
+npm run firebase:deploy:functions
 
-## What technologies are used for this project?
+# Deploy Firestore rules
+npm run firebase:deploy:firestore
+```
 
-This project is built with:
+## 🎮 Game Features
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Survival Gameplay**: Navigate as a moth avoiding obstacles
+- **Real-time Leaderboard**: Powered by Firestore
+- **Wallet Integration**: Connect Sonic Network wallets
+- **Mobile Optimized**: Touch controls for mobile devices
+- **Progressive Web App**: Installable on mobile devices
 
-## How can I deploy this project?
+## 🏗️ Project Structure
 
-Simply open [Lovable](https://lovable.dev/projects/444f516a-3a5b-423c-93ad-7accb316a1ed) and click on Share -> Publish.
+```
+├── .idx/                   # Google IDX configuration
+├── functions/              # Firebase Cloud Functions
+├── src/
+│   ├── components/         # React components
+│   ├── lib/
+│   │   ├── firebase.ts     # Firebase configuration
+│   │   └── firestore.ts    # Firestore operations
+│   └── pages/              # Application pages
+├── firebase.json           # Firebase configuration
+├── firestore.rules         # Firestore security rules
+└── firestore.indexes.json  # Firestore indexes
+```
 
-## Can I connect a custom domain to my Lovable project?
+## 🔥 Firebase Services Used
 
-Yes, you can!
+- **Firestore**: Real-time database for leaderboards and user profiles
+- **Cloud Functions**: Server-side logic for score validation
+- **Hosting**: Static site hosting
+- **Authentication**: User authentication (optional)
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🌐 Environment Variables
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Required environment variables:
+
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_STORAGE_BUCKET`
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- `VITE_FIREBASE_APP_ID`
+
+## 📱 Mobile Support
+
+The game includes full mobile support with:
+- Touch controls for movement and shooting
+- Responsive design
+- Mobile-optimized UI components
+- Progressive Web App capabilities
+
+## 🔐 Security
+
+- Firestore security rules prevent unauthorized access
+- Client-side validation with server-side verification
+- Wallet address validation for score submissions
+
+## 🚀 Deployment
+
+The project is configured for easy deployment to Firebase Hosting:
+
+1. Build the project: `npm run build`
+2. Deploy: `npm run firebase:deploy`
+
+## 🛠️ Development
+
+- **Hot Reload**: Automatic reloading during development
+- **TypeScript**: Full type safety
+- **ESLint**: Code linting and formatting
+- **Firebase Emulators**: Local development environment
+
+## 📄 License
+
+This project is open source and available under the MIT License.
