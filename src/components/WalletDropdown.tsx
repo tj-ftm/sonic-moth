@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { getUserProfile, createOrUpdateUserProfile, submitScore } from '../lib/supabase';
+import { getUserProfile, createOrUpdateUserProfile, submitScore } from '../lib/firestore';
 
 interface WalletDropdownProps {
   walletConnected: boolean;
@@ -200,7 +200,7 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({
           const pendingPlayerName = localStorage.getItem('pendingPlayerName');
           
           if (pendingScore) {
-            // Submit score to Supabase
+            // Submit score to Firebase
             try {
               await submitScore(
                 accounts[0],

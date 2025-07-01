@@ -253,13 +253,11 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
     ctx.restore();
   };
 
-  const drawLampImage = new Image();
-  drawLampImage.src = '/lamp.svg';
-
+  // Load the provided SVG as an image for obstacles
   const drawObstacle = (ctx: CanvasRenderingContext2D, obstacle: Obstacle, time: number) => {
     ctx.save();
     
-    // Draw rotating lamp with glow effect
+    // Draw rotating lamp with glow effect using the provided SVG
     const rotation = time * 0.005;
     ctx.translate(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2);
     ctx.rotate(rotation);
@@ -269,17 +267,22 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
     ctx.shadowColor = '#FFD700';
     ctx.globalAlpha = 0.9;
     
-    // Draw lamp image if loaded, otherwise fallback to circle
-    if (drawLampImage.complete && drawLampImage.naturalHeight !== 0) {
-      const size = obstacle.width * 1.2; // Scale to fit obstacle size
-      ctx.drawImage(drawLampImage, -size/2, -size/2, size, size);
-    } else {
-      // Fallback: golden glowing circle
-      ctx.fillStyle = '#FFD700';
-      ctx.beginPath();
-      ctx.arc(0, 0, obstacle.width * 0.3, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    // Draw a simplified lamp shape based on the SVG (since we can't directly use SVG in canvas)
+    // Main lamp body (teal color from SVG)
+    ctx.fillStyle = '#7FCAC3';
+    ctx.beginPath();
+    ctx.ellipse(0, -obstacle.height * 0.2, obstacle.width * 0.3, obstacle.height * 0.4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Lamp shade (yellow from SVG)
+    ctx.fillStyle = '#F9C13B';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, obstacle.width * 0.4, obstacle.height * 0.3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Lamp base (teal)
+    ctx.fillStyle = '#7FCAC3';
+    ctx.fillRect(-obstacle.width * 0.1, obstacle.height * 0.2, obstacle.width * 0.2, obstacle.height * 0.2);
     
     ctx.restore();
   };
@@ -455,6 +458,7 @@ const MothGame: React.FC<MothGameProps> = ({ onScoreUpdate, walletConnected, wal
       const numObstacles = Math.random() < 0.6 ? 3 : 2;
       
       for (let i = 0; i < numObstacles; i++) {
+        // Make obstacles 20% smaller than moth (moth is ~35px, so obstacles are ~28px)
         state.obstacles.push({
           x: canvas.width + i * 120,
           y: Math.random() * (canvas.height - 100) + 50,

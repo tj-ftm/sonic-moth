@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User profiles - users can read all profiles, but only update their own
+    match /user_profiles/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        (request.auth.uid == userId || 
+         request.auth.token.wallet_address == resource.data.wallet_address);
+    }
+    
+    // Leaderboard scores - anyone can read, authenticated users can write
+    match /leaderboard_scores/{scoreId} {
+      allow read: if true;
+      allow create: if request.auth != null || 
+        (request.resource.data.wallet_address != null && 
+         request.resource.data.wallet_address != "");
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.user_id;
+    }
+    
+    // Game sessions - users can only access their own sessions
+    match /game_sessions/{sessionId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == resource.data.user_id ||
+         request.auth.token.wallet_address == resource.data.wallet_address);
+    }
+  }
+}

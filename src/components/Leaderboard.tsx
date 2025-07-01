@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { getLeaderboard, LeaderboardScore } from '../lib/supabase';
+import { getLeaderboard, LeaderboardScore } from '../lib/firestore';
 
 interface LeaderboardProps {
   walletAddress?: string;
